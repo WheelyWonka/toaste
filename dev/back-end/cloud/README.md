@@ -49,7 +49,8 @@ Create a table named `Order Items` with these fields:
    - Name: `Toasté Bike Polo Orders`
    - Scopes: `data.records:write`, `data.records:read`
    - Bases: Select your `Toasté Bike Polo Orders` base
-3. **Get Base ID**: https://airtable.com/api → Select your base → Copy Base ID
+3. **Copy the token** (starts with `pat` - you won't see it again!)
+4. **Get Base ID**: https://airtable.com/api → Select your base → Copy Base ID
 
 ### Step 2: Netlify Configuration
 
@@ -67,7 +68,7 @@ Create a table named `Order Items` with these fields:
 In Netlify Dashboard → Site settings → Environment variables:
 
 ```
-AIRTABLE_API_KEY=your-personal-access-token-here
+AIRTABLE_PAT=your-personal-access-token-here
 AIRTABLE_BASE_ID=your-base-id-here
 NODE_ENV=production
 ```
@@ -200,10 +201,11 @@ npm run deploy
 
 ## 🚨 Important Notes
 
-1. **Airtable API Key**: Keep your Personal Access Token secure
+1. **Airtable Personal Access Token**: Keep your PAT secure (starts with `pat`)
 2. **Rate Limits**: Airtable free tier has 5 requests/second limit
 3. **Cold Starts**: First request to functions may be slow
-4. **Environment Variables**: Never commit API keys to git
+4. **Environment Variables**: Never commit tokens to git
+5. **Token Security**: PATs are more secure than old API keys
 
 ## 🔧 Troubleshooting
 

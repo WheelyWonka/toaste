@@ -57,7 +57,8 @@ This guide will walk you through setting up the Toasté Bike Polo order system u
    - **Scopes**: Check `data.records:write` and `data.records:read`
    - **Bases**: Select your `Toasté Bike Polo Orders` base
 5. **Click "Create token"**
-6. **Copy the token** (starts with `pat` - you won't see it again!)
+6. **Copy the Personal Access Token** (starts with `pat` - you won't see it again!)
+7. **Important**: This replaces the old API keys (deprecated February 2024)
 
 ### 1.5 Get Base ID
 1. **Go to**: https://airtable.com/api
@@ -92,7 +93,7 @@ This guide will walk you through setting up the Toasté Bike Polo order system u
 2. **Add these variables**:
 
 ```
-AIRTABLE_API_KEY=your-personal-access-token-here
+AIRTABLE_PAT=your-personal-access-token-here
 AIRTABLE_BASE_ID=your-base-id-here
 NODE_ENV=production
 ```
@@ -187,8 +188,8 @@ curl -X POST https://your-site-name.netlify.app/.netlify/functions/orders \
 - [ ] Base created with correct name
 - [ ] Orders table with all required fields
 - [ ] Order Items table with all required fields
-- [ ] Personal Access Token created
-- [ ] Base ID copied
+- [ ] Personal Access Token created (starts with `pat`)
+- [ ] Base ID copied (starts with `app`)
 
 ### ✅ Netlify Setup
 - [ ] Site deployed successfully
@@ -220,9 +221,10 @@ curl -X POST https://your-site-name.netlify.app/.netlify/functions/orders \
 - Verify custom domains are set up correctly
 
 **3. Airtable errors**
-- Verify API key is correct
-- Check Base ID is correct
+- Verify Personal Access Token is correct (starts with `pat`)
+- Check Base ID is correct (starts with `app`)
 - Ensure tables exist with correct names
+- Verify PAT has correct scopes (data.records:read, data.records:write)
 
 **4. DNS not working**
 - Wait 24-48 hours for DNS propagation

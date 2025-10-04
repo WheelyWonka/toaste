@@ -18,8 +18,8 @@ if [ ! -f ".env" ]; then
     echo "⚠️  .env file not found. Creating from template..."
     cp .env.example .env
     echo "📝 Please edit .env file with your Airtable credentials:"
-    echo "   - AIRTABLE_API_KEY=your-personal-access-token"
-    echo "   - AIRTABLE_BASE_ID=your-base-id"
+    echo "   - AIRTABLE_PAT=your-personal-access-token (starts with 'pat')"
+    echo "   - AIRTABLE_BASE_ID=your-base-id (starts with 'app')"
     echo ""
     read -p "Press ENTER after configuring .env file..."
 fi

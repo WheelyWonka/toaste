@@ -2,7 +2,7 @@ const Airtable = require('airtable');
 
 // Initialize Airtable
 const base = new Airtable({
-  apiKey: process.env.AIRTABLE_API_KEY
+  apiKey: process.env.AIRTABLE_PAT
 }).base(process.env.AIRTABLE_BASE_ID);
 
 // Generate random order code

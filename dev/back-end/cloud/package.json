@@ -1,0 +1,28 @@
+{
+  "name": "toaste-bike-polo-cloud",
+  "version": "1.0.0",
+  "description": "Toasté Bike Polo order system - Netlify Functions + Airtable",
+  "main": "index.js",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'No build step needed'",
+    "deploy": "netlify deploy --prod"
+  },
+  "keywords": [
+    "bike-polo",
+    "netlify",
+    "airtable",
+    "serverless"
+  ],
+  "author": "Toasté Bike Polo",
+  "license": "MIT",
+  "dependencies": {
+    "airtable": "^0.12.2"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

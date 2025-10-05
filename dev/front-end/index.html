@@ -24,7 +24,9 @@
 
         <main>
         <div class="content-wrapper">
-            <div id="model-container"></div>
+            <div class="model-sticky-wrapper">
+                <div id="model-container"></div>
+            </div>
             
             <div class="forms-container">
                 <section id="product-selection">
@@ -38,7 +40,7 @@
                         <h3 data-i18n="cart.title">Your Order</h3>
                         <div id="cart-items"></div>
                         <div class="cart-total" id="cart-total-btn">
-                            <strong>Total: CAD$<span id="total-price">0.00</span> →</strong>
+                            <strong>Subtotal: CAD$<span id="total-price">0.00</span> →</strong>
                         </div>
                     </div>
                     
@@ -104,9 +106,9 @@
                             <textarea id="notes" name="notes" data-i18n="contactForm.notes.placeholder" placeholder="Any special requirements?"></textarea>
                         </div>
 
-                        <div class="button-group">
+                        <div class="form-actions">
                             <button type="button" class="back-btn" data-i18n="contactForm.back">← Back to Configuration</button>
-                            <button type="button" class="submit-btn" data-i18n="contactForm.review">Review Order →</button>
+                            <button type="submit" class="submit-btn" data-i18n="contactForm.review">Review Order →</button>
                         </div>
                     </form>
                 </section>
@@ -128,7 +130,7 @@
                                 <strong>Total: CAD$<span id="review-total-price">0.00</span></strong>
                             </div>
                         </div>
-                        <div class="button-group">
+                        <div class="form-actions">
                             <button type="button" class="back-btn" data-i18n="review.back">← Back to Contact Info</button>
                             <button type="button" class="submit-btn" data-i18n="review.submit">Complete Order →</button>
                         </div>

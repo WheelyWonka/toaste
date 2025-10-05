@@ -41,10 +41,80 @@ let currentProduct = {
     quantity: 1
 };
 
+// LocalStorage keys
+const STORAGE_KEYS = {
+    CART: 'toaste_cart',
+    CONTACT_INFO: 'toaste_contact_info'
+};
+
+// Load cart from localStorage on page load
+function loadCartFromStorage() {
+    try {
+        const savedCart = localStorage.getItem(STORAGE_KEYS.CART);
+        if (savedCart) {
+            selectedProducts = JSON.parse(savedCart);
+            updateCartDisplay();
+        }
+    } catch (error) {
+        console.error('Error loading cart from storage:', error);
+    }
+}
+
+// Save cart to localStorage
+function saveCartToStorage() {
+    try {
+        localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(selectedProducts));
+    } catch (error) {
+        console.error('Error saving cart to storage:', error);
+    }
+}
+
+// Load contact info from localStorage
+function loadContactInfoFromStorage() {
+    try {
+        const savedContactInfo = localStorage.getItem(STORAGE_KEYS.CONTACT_INFO);
+        if (savedContactInfo) {
+            const contactInfo = JSON.parse(savedContactInfo);
+            document.getElementById('name').value = contactInfo.name || '';
+            document.getElementById('email').value = contactInfo.email || '';
+            document.getElementById('address').value = contactInfo.address || '';
+            document.getElementById('notes').value = contactInfo.notes || '';
+        }
+    } catch (error) {
+        console.error('Error loading contact info from storage:', error);
+    }
+}
+
+// Save contact info to localStorage
+function saveContactInfoToStorage() {
+    try {
+        const contactInfo = {
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            address: document.getElementById('address').value,
+            notes: document.getElementById('notes').value
+        };
+        localStorage.setItem(STORAGE_KEYS.CONTACT_INFO, JSON.stringify(contactInfo));
+    } catch (error) {
+        console.error('Error saving contact info to storage:', error);
+    }
+}
+
+// Clear all order data from localStorage
+function clearOrderFromStorage() {
+    try {
+        localStorage.removeItem(STORAGE_KEYS.CART);
+        localStorage.removeItem(STORAGE_KEYS.CONTACT_INFO);
+    } catch (error) {
+        console.error('Error clearing order from storage:', error);
+    }
+}
+
 // Pricing configuration
 const PRICING = {
     basePrice: 45.00, // Base price per wheel cover
-    pairDiscount: 0.05 // 5% discount for pairs
+    pairDiscount: 0.05, // 5% discount for pairs
+    taxRate: 0.15 // 15% Quebec taxes
 };
 
 // Calculate price for a product
@@ -52,17 +122,25 @@ function calculateProductPrice(product) {
     return PRICING.basePrice * product.quantity;
 }
 
-// Calculate total price with pair discount
+// Calculate total price with pair discount and taxes
 function calculateTotalPrice(products) {
-    let total = products.reduce((sum, product) => sum + calculateProductPrice(product), 0);
+    let subtotal = products.reduce((sum, product) => sum + calculateProductPrice(product), 0);
     
     // Apply 5% discount if total quantity is 2 or more
     const totalQuantity = products.reduce((sum, product) => sum + product.quantity, 0);
     if (totalQuantity >= 2) {
-        total *= (1 - PRICING.pairDiscount);
+        subtotal *= (1 - PRICING.pairDiscount);
     }
     
-    return total;
+    // Add Quebec taxes (15%)
+    const taxes = subtotal * PRICING.taxRate;
+    const total = subtotal + taxes;
+    
+    return {
+        subtotal: subtotal,
+        taxes: taxes,
+        total: total
+    };
 }
 
 // Update cart display
@@ -91,8 +169,8 @@ function updateCartDisplay() {
         cartItems.appendChild(cartItem);
     });
     
-    const total = calculateTotalPrice(selectedProducts);
-    totalPriceSpan.textContent = total.toFixed(2);
+    const pricing = calculateTotalPrice(selectedProducts);
+    totalPriceSpan.textContent = pricing.subtotal.toFixed(2);
 }
 
 // Add product to cart
@@ -131,6 +209,9 @@ function addToCart() {
     resetProductForm();
     updateCartDisplay();
     
+    // Save cart to localStorage
+    saveCartToStorage();
+    
     // Scroll to cart title to show the updated order
     const cartTitle = cartSummary.querySelector('h3');
     cartTitle.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -140,6 +221,7 @@ function addToCart() {
 window.removeFromCart = function(index) {
     selectedProducts.splice(index, 1);
     updateCartDisplay();
+    saveCartToStorage();
 };
 
 // Reset product form
@@ -503,6 +585,9 @@ continueBtn.addEventListener('click', () => {
     
     productSection.style.display = 'none';
     contactSection.style.display = 'block';
+    
+    // Scroll to top of contact section
+    contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
 // Cart total button click to continue
@@ -514,6 +599,9 @@ document.getElementById('cart-total-btn').addEventListener('click', () => {
     
     productSection.style.display = 'none';
     contactSection.style.display = 'block';
+    
+    // Scroll to top of contact section
+    contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
 // Generate random order code
@@ -581,6 +669,9 @@ customerForm.addEventListener('submit', (e) => {
     contactSection.style.display = 'none';
     reviewSection.style.display = 'block';
     updateReviewDisplay();
+    
+    // Scroll to top of review section
+    reviewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
 // Update review display
@@ -631,9 +722,29 @@ function updateReviewDisplay() {
         reviewOrderItems.appendChild(discountItem);
     }
     
+    // Show pricing breakdown
+    const pricing = calculateTotalPrice(selectedProducts);
+    
+    // Subtotal
+    const subtotalItem = document.createElement('div');
+    subtotalItem.className = 'review-order-item';
+    subtotalItem.innerHTML = `
+        <div><strong>Subtotal</strong></div>
+        <div>CAD$${pricing.subtotal.toFixed(2)}</div>
+    `;
+    reviewOrderItems.appendChild(subtotalItem);
+    
+    // Taxes
+    const taxItem = document.createElement('div');
+    taxItem.className = 'review-order-item';
+    taxItem.innerHTML = `
+        <div><strong>Taxes (15%)</strong></div>
+        <div>CAD$${pricing.taxes.toFixed(2)}</div>
+    `;
+    reviewOrderItems.appendChild(taxItem);
+    
     // Total
-    const total = calculateTotalPrice(selectedProducts);
-    reviewTotalPrice.textContent = total.toFixed(2);
+    reviewTotalPrice.textContent = pricing.total.toFixed(2);
 }
 
 // Handle final order submission
@@ -657,10 +768,16 @@ document.querySelector('#order-review .submit-btn').addEventListener('click', as
         const result = await createOrderInAPI(formData);
 
         if (result.success) {
+            // Clear order data from localStorage after successful submission
+            clearOrderFromStorage();
+            
             // Show confirmation
             reviewSection.style.display = 'none';
             confirmationSection.style.display = 'block';
             orderCodeSpan.textContent = result.orderCode;
+            
+            // Scroll to top of confirmation section
+            confirmationSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
             throw new Error(result.error);
         }
@@ -685,4 +802,16 @@ document.querySelector('#contact-form .back-btn').addEventListener('click', () =
 document.querySelector('#order-review .back-btn').addEventListener('click', () => {
     reviewSection.style.display = 'none';
     contactSection.style.display = 'block';
+});
+
+// Save contact info to localStorage as user types
+document.getElementById('name').addEventListener('input', saveContactInfoToStorage);
+document.getElementById('email').addEventListener('input', saveContactInfoToStorage);
+document.getElementById('address').addEventListener('input', saveContactInfoToStorage);
+document.getElementById('notes').addEventListener('input', saveContactInfoToStorage);
+
+// Initialize: Load saved data from localStorage when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    loadCartFromStorage();
+    loadContactInfoFromStorage();
 }); 

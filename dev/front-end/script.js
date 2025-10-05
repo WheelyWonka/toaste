@@ -161,13 +161,18 @@ function calculateCartSubtotal(products) {
 
 // Calculate total price with pair discount and taxes (for step 3)
 function calculateTotalPrice(products) {
-    let subtotal = products.reduce((sum, product) => sum + calculateProductPrice(product), 0);
+    // Calculate base subtotal (no discount)
+    const baseSubtotal = products.reduce((sum, product) => sum + calculateProductPrice(product), 0);
     
-    // Apply 5% discount if total quantity is 2 or more
+    // Calculate discount only on pairs
     const totalQuantity = products.reduce((sum, product) => sum + product.quantity, 0);
-    if (totalQuantity >= 2) {
-        subtotal *= (1 - PRICING.pairDiscount);
-    }
+    const pairsCount = Math.floor(totalQuantity / 2); // Number of complete pairs
+    const itemsInPairs = pairsCount * 2; // Number of items that get discount
+    
+    // Calculate discounted subtotal
+    const discountedAmount = itemsInPairs * PRICING.basePrice * (1 - PRICING.pairDiscount);
+    const fullPriceAmount = (totalQuantity - itemsInPairs) * PRICING.basePrice;
+    const subtotal = discountedAmount + fullPriceAmount;
     
     // Add Quebec taxes (15%)
     const taxes = subtotal * PRICING.taxRate;
@@ -176,7 +181,10 @@ function calculateTotalPrice(products) {
     return {
         subtotal: subtotal,
         taxes: taxes,
-        total: total
+        total: total,
+        baseSubtotal: baseSubtotal,
+        discountAmount: baseSubtotal - subtotal,
+        pairsCount: pairsCount
     };
 }
 
@@ -747,22 +755,19 @@ function updateReviewDisplay() {
         reviewOrderItems.appendChild(orderItem);
     });
     
+    // Show pricing breakdown
+    const pricing = calculateTotalPrice(selectedProducts);
+    
     // Show pair discount if applicable
-    const totalQuantity = selectedProducts.reduce((sum, product) => sum + product.quantity, 0);
-    if (totalQuantity >= 2) {
-        const subtotal = selectedProducts.reduce((sum, product) => sum + calculateProductPrice(product), 0);
-        const discountAmount = subtotal * PRICING.pairDiscount;
+    if (pricing.pairsCount > 0) {
         const discountItem = document.createElement('div');
         discountItem.className = 'review-order-item';
         discountItem.innerHTML = `
-            <div><em>5% Pair Discount</em></div>
-            <div>-CAD$${discountAmount.toFixed(2)}</div>
+            <div><em>5% Pair Discount (${pricing.pairsCount} pair${pricing.pairsCount > 1 ? 's' : ''})</em></div>
+            <div>-CAD$${pricing.discountAmount.toFixed(2)}</div>
         `;
         reviewOrderItems.appendChild(discountItem);
     }
-    
-    // Show pricing breakdown
-    const pricing = calculateTotalPrice(selectedProducts);
     
     // Subtotal
     const subtotalItem = document.createElement('div');

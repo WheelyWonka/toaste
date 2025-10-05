@@ -38,7 +38,7 @@
       "placeholder": "Ton adresse email"
     },
     "address": {
-      "label": "Où on t'envoie ça :",
+      "label": "Ton adresse:",
       "placeholder": "Ton adresse complète"
     },
     "notes": {

@@ -38,7 +38,7 @@
       "placeholder": "Your email address"
     },
     "address": {
-      "label": "Where to ship:",
+      "label": "Your Address:",
       "placeholder": "Your complete address"
     },
     "notes": {

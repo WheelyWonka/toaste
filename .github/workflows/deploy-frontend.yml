@@ -39,10 +39,17 @@ jobs:
 
       - name: Purge Cloudflare Cache
         if: success()
-        uses: cloudflare/purge-action@v1
-        with:
-          api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-          files: |
-            https://preprod.toastebikepolo.ca
-            https://preprod.toastebikepolo.ca/*
+        run: |
+          curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{
+              "files": [
+                "https://preprod.toastebikepolo.ca",
+                "https://preprod.toastebikepolo.ca/",
+                "https://preprod.toastebikepolo.ca/index.html",
+                "https://preprod.toastebikepolo.ca/script.js",
+                "https://preprod.toastebikepolo.ca/config.js",
+                "https://preprod.toastebikepolo.ca/styles.css"
+              ]
+            }'

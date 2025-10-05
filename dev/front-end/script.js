@@ -318,13 +318,13 @@ function handleOptionClick(group, input, value) {
     
     // Update selected product
     if (group === spokeCountGroup) {
-        selectedProduct.spokeCount = value;
+        currentProduct.spokeCount = value;
     } else {
-        selectedProduct.wheelSize = value;
+        currentProduct.wheelSize = value;
     }
     
     // Enable submit button if both options are selected
-    submitBtn.disabled = !(selectedProduct.spokeCount && selectedProduct.wheelSize);
+    submitBtn.disabled = !(currentProduct.spokeCount && currentProduct.wheelSize);
 }
 
 // Add click handlers to spoke count buttons
@@ -345,10 +345,17 @@ wheelSizeGroup.querySelectorAll('.option-btn').forEach(button => {
 productForm.addEventListener('submit', (e) => {
     e.preventDefault();
     
-    if (!selectedProduct.spokeCount || !selectedProduct.wheelSize) {
+    if (!currentProduct.spokeCount || !currentProduct.wheelSize) {
         alert('Please select both spoke count and wheel size');
         return;
     }
+    
+    // Add current product to selected products array
+    selectedProducts.push({
+        spokeCount: currentProduct.spokeCount,
+        wheelSize: currentProduct.wheelSize,
+        quantity: currentProduct.quantity
+    });
     
     productSection.style.display = 'none';
     contactSection.style.display = 'block';

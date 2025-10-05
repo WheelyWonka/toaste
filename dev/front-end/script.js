@@ -20,9 +20,11 @@ const wheelSizeInput = document.getElementById('wheel-size');
 const submitBtn = productForm.querySelector('.submit-btn');
 
 // Store product selection
-let selectedProduct = {
+let selectedProducts = []; // Array of {spokeCount, wheelSize, quantity}
+let currentProduct = {
     spokeCount: '',
-    wheelSize: ''
+    wheelSize: '',
+    quantity: 1
 };
 
 // Three.js setup for main scene
@@ -402,16 +404,12 @@ async function createOrderInAPI(orderData) {
 customerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const orderCode = generateOrderCode();
     const formData = {
-        orderCode,
-        spokeCount: selectedProduct.spokeCount,
-        wheelSize: selectedProduct.wheelSize,
+        products: selectedProducts, // Array of {spokeCount, wheelSize, quantity}
         customerName: document.getElementById('name').value,
         customerEmail: document.getElementById('email').value,
         shippingAddress: document.getElementById('address').value,
-        notes: document.getElementById('notes').value,
-        orderDate: new Date().toISOString()
+        notes: document.getElementById('notes').value
     };
 
     try {
@@ -420,9 +418,6 @@ customerForm.addEventListener('submit', async (e) => {
         const originalText = submitBtn.textContent;
         submitBtn.textContent = 'Submitting Order...';
         submitBtn.disabled = true;
-
-        // Add quantity to form data (default to 1 for now)
-        formData.quantity = 1;
 
         // Create order via API
         const result = await createOrderInAPI(formData);

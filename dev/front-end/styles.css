@@ -32,6 +32,10 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     cursor: default;
+    /* Fix mobile scrolling */
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
 }
 
 h1, h2 {
@@ -686,6 +690,79 @@ input:hover, select:hover, textarea:hover {
 .lang-btn:hover {
     background: #333;
     color: white;
+}
+
+/* Mobile-specific fixes */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+    
+    /* Fix button overflow on mobile */
+    .btn-group {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .btn-group button {
+        flex: 1;
+        min-width: 120px;
+        font-size: 14px;
+        padding: 0.75rem 0.5rem;
+    }
+    
+    /* Fix form elements on mobile */
+    input, textarea, select {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Fix 3D model container on mobile */
+    #model-container {
+        width: 100%;
+        max-width: 100%;
+        height: 300px;
+    }
+    
+    /* Language buttons - fixed position on mobile */
+    .lang-buttons {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .lang-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    /* Ensure content doesn't overlap with fixed language buttons */
+    .main-content {
+        padding-bottom: 100px;
+    }
+    
+    /* Fix any horizontal overflow */
+    * {
+        max-width: 100%;
+    }
+    
+    /* Improve touch targets */
+    button, .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
 }
 
 .lang-btn.active {

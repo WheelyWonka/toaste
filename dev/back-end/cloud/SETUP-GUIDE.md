@@ -102,42 +102,61 @@ NODE_ENV=production
 
 ### 2.4 Set Up Custom Domains
 1. **In Netlify Dashboard** → **Domain settings**
-2. **Add custom domain**: `toastebikepolo.com`
-3. **Add custom domain**: `toastebikepolo.ca`
+2. **Add custom domain**: `api.toastebikepolo.com`
+3. **Add custom domain**: `api.toastebikepolo.ca`
 4. **Configure DNS** (see DNS setup below)
 
 ---
 
 ## Step 3: DNS Configuration
 
-### 3.1 For toastebikepolo.com
-In your domain registrar's DNS settings:
+### 3.1 For api.toastebikepolo.com
+In your Cloudflare DNS settings:
 
 ```
 Type: CNAME
-Name: @
-Value: your-site-name.netlify.app
-TTL: 3600
+Name: api
+Target: your-site-name.netlify.app
+Proxy status: ✅ Proxied (Orange cloud)
+TTL: Auto
+```
 
-Type: CNAME  
+### 3.2 For api.toastebikepolo.ca
+In your Cloudflare DNS settings:
+
+```
+Type: CNAME
+Name: api
+Target: your-site-name.netlify.app
+Proxy status: ✅ Proxied (Orange cloud)
+TTL: Auto
+```
+
+### 3.3 Frontend Domains (GitHub Pages)
+Your main frontend domains should point to GitHub Pages:
+
+```
+# For toastebikepolo.com (GitHub Pages)
+Type: CNAME
+Name: @
+Target: your-username.github.io
+Proxy status: ✅ Proxied (Orange cloud)
+
+Type: CNAME
 Name: www
-Value: your-site-name.netlify.app
-TTL: 3600
-```
+Target: your-username.github.io
+Proxy status: ✅ Proxied (Orange cloud)
 
-### 3.2 For toastebikepolo.ca
-In your domain registrar's DNS settings:
-
-```
+# For toastebikepolo.ca (GitHub Pages)
 Type: CNAME
 Name: @
-Value: your-site-name.netlify.app
-TTL: 3600
+Target: your-username.github.io
+Proxy status: ✅ Proxied (Orange cloud)
 
 Type: CNAME
-Name: www  
-Value: your-site-name.netlify.app
-TTL: 3600
+Name: www
+Target: your-username.github.io
+Proxy status: ✅ Proxied (Orange cloud)
 ```
 
 ---
@@ -146,7 +165,12 @@ TTL: 3600
 
 ### 4.1 Test API Health
 ```bash
+# Test via Netlify URL
 curl https://your-site-name.netlify.app/.netlify/functions/health
+
+# Test via custom domain
+curl https://api.toastebikepolo.com/.netlify/functions/health
+curl https://api.toastebikepolo.ca/.netlify/functions/health
 ```
 
 Expected response:
@@ -162,7 +186,8 @@ Expected response:
 
 ### 4.2 Test Order Creation
 ```bash
-curl -X POST https://your-site-name.netlify.app/.netlify/functions/orders \
+# Test via custom domain
+curl -X POST https://api.toastebikepolo.com/.netlify/functions/orders \
   -H "Content-Type: application/json" \
   -d '{
     "spokeCount": "32",
@@ -174,10 +199,10 @@ curl -X POST https://your-site-name.netlify.app/.netlify/functions/orders \
   }'
 ```
 
-### 4.3 Test Frontend
-1. **Visit**: https://toastebikepolo.com
+### 4.3 Test Frontend Integration
+1. **Visit your frontend**: https://toastebikepolo.com (GitHub Pages)
 2. **Fill out the form**
-3. **Submit an order**
+3. **Submit an order** (will call api.toastebikepolo.com)
 4. **Check Airtable** to verify the order was created
 
 ---
@@ -194,16 +219,16 @@ curl -X POST https://your-site-name.netlify.app/.netlify/functions/orders \
 ### ✅ Netlify Setup
 - [ ] Site deployed successfully
 - [ ] Environment variables configured
-- [ ] Custom domains added
+- [ ] API subdomains added (api.toastebikepolo.com, api.toastebikepolo.ca)
 - [ ] DNS configured correctly
 - [ ] SSL certificates active
 
 ### ✅ Testing
-- [ ] Health endpoint responds
-- [ ] Order creation works
-- [ ] Frontend loads correctly
+- [ ] Health endpoint responds on API subdomains
+- [ ] Order creation works via API subdomains
+- [ ] Frontend loads correctly on main domains (GitHub Pages)
 - [ ] Orders appear in Airtable
-- [ ] Both domains work (.com and .ca)
+- [ ] Both API subdomains work (.com and .ca)
 
 ---
 
@@ -218,7 +243,8 @@ curl -X POST https://your-site-name.netlify.app/.netlify/functions/orders \
 
 **2. CORS errors**
 - Check domain configuration in functions
-- Verify custom domains are set up correctly
+- Verify API subdomains are set up correctly
+- Ensure frontend domains are configured for GitHub Pages
 
 **3. Airtable errors**
 - Verify Personal Access Token is correct (starts with `pat`)
@@ -226,10 +252,12 @@ curl -X POST https://your-site-name.netlify.app/.netlify/functions/orders \
 - Ensure tables exist with correct names
 - Verify PAT has correct scopes (data.records:read, data.records:write)
 
-**4. DNS not working**
-- Wait 24-48 hours for DNS propagation
-- Check DNS settings in domain registrar
-- Verify CNAME records point to Netlify
+**4. Domain/DNS issues**
+- **API subdomain not working**: Check DNS propagation (can take 24 hours)
+- **SSL issues**: Ensure DNS is pointing to Netlify for API subdomains
+- **Frontend not loading**: Ensure main domains point to GitHub Pages
+- **Mixed content errors**: Ensure both frontend and API use HTTPS
+
 
 ### Getting Help
 

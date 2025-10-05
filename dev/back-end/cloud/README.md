@@ -5,8 +5,10 @@ A serverless order management system using Netlify Functions and Airtable for To
 ## 🏗️ Architecture
 
 ```
-Frontend (Netlify) → Netlify Functions → Airtable API → Database
+Frontend (GitHub Pages) → Netlify Functions → Airtable API → Database
 ```
+
+**Note**: This is an API-only deployment. The frontend is hosted separately on GitHub Pages.
 
 ## 🚀 Quick Setup Guide
 
@@ -74,11 +76,12 @@ NODE_ENV=production
 ```
 
 #### 2.3 Custom Domain Setup
-1. **Add custom domains**:
-   - `toastebikepolo.com`
-   - `toastebikepolo.ca`
+1. **Add API subdomains**:
+   - `api.toastebikepolo.com`
+   - `api.toastebikepolo.ca`
 2. **Configure DNS**:
-   - Add CNAME records pointing to your Netlify site
+   - Add CNAME records for `api` subdomain pointing to your Netlify site
+   - Keep main domains (`toastebikepolo.com`, `toastebikepolo.ca`) pointing to GitHub Pages
    - Enable SSL (automatic with Netlify)
 
 ### Step 3: Test the Setup
@@ -163,12 +166,12 @@ npm run deploy
 ## 🌐 Production URLs
 
 **International (.com):**
-- Frontend: https://toastebikepolo.com
-- API: https://toastebikepolo.com/.netlify/functions/orders
+- Frontend: https://toastebikepolo.com (GitHub Pages)
+- API: https://api.toastebikepolo.com/.netlify/functions/orders (Netlify)
 
 **Canadian (.ca):**
-- Frontend: https://toastebikepolo.ca
-- API: https://toastebikepolo.ca/.netlify/functions/orders
+- Frontend: https://toastebikepolo.ca (GitHub Pages)
+- API: https://api.toastebikepolo.ca/.netlify/functions/orders (Netlify)
 
 ## 🔒 Security Features
 

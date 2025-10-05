@@ -1,6 +1,6 @@
 // API Configuration (dynamically set based on domain)
 const API_CONFIG = {
-    baseUrl: window.TOASTE_CONFIG?.apiBaseUrl || 'https://api.toastebikepolo.com/api'
+    baseUrl: window.TOASTE_CONFIG?.apiBaseUrl || 'https://toastebikepolo.netlify.app/.netlify/functions'
 };
 
 // Form elements
@@ -366,7 +366,7 @@ function generateOrderCode() {
 // API Functions
 async function createOrderInAPI(orderData) {
     try {
-        // Send order data to secure API
+        // Send order data to Netlify function
         const response = await fetch(`${API_CONFIG.baseUrl}/orders`, {
             method: 'POST',
             headers: {

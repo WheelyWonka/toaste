@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toasté Bike Polo - API</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .tagline {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        .section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        .endpoint {
+            background: #2c3e50;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            margin: 0.5rem 0;
+            display: inline-block;
+        }
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .status.healthy {
+            background: #d4edda;
+            color: #155724;
+        }
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🚴‍♂️ Toasté Bike Polo</div>
+        <div class="tagline">API Server</div>
+    </div>
+
+    <div class="section">
+        <h2>📡 API Endpoints</h2>
+        <p>This is the API server for Toasté Bike Polo wheel covers. The frontend is hosted separately on GitHub Pages.</p>
+        
+        <h3>Available Endpoints:</h3>
+        <div class="endpoint">GET /.netlify/functions/health</div>
+        <p>Health check endpoint</p>
+        
+        <div class="endpoint">POST /.netlify/functions/orders</div>
+        <p>Create new wheel cover orders</p>
+    </div>
+
+    <div class="section">
+        <h2>🌐 Domains</h2>
+        <p>This API is accessible via:</p>
+        <ul>
+            <li><strong>api.toastebikepolo.com</strong></li>
+            <li><strong>api.toastebikepolo.ca</strong></li>
+        </ul>
+        
+        <div class="note">
+            <strong>Note:</strong> The main website (frontend) is hosted on GitHub Pages at:
+            <ul>
+                <li>toastebikepolo.com</li>
+                <li>toastebikepolo.ca</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🔧 Technical Details</h2>
+        <ul>
+            <li><strong>Platform:</strong> Netlify Functions</li>
+            <li><strong>Database:</strong> Airtable</li>
+            <li><strong>Authentication:</strong> Personal Access Tokens (PAT)</li>
+            <li><strong>SSL:</strong> Automatic via Netlify</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>📊 Status</h2>
+        <p>API Status: <span class="status healthy">🟢 Healthy</span></p>
+        <p>Last updated: <span id="timestamp"></span></p>
+    </div>
+
+    <script>
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+    </script>
+</body>
+</html>

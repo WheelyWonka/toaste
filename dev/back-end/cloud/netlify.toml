@@ -1,9 +1,9 @@
 [build]
-  # Build command (not needed for static site + functions)
+  # Build command (not needed for functions-only site)
   command = ""
 
-  # Publish directory
-  publish = "public"
+  # Publish directory (empty since we only have functions)
+  publish = "."
 
   # Functions directory
   functions = "netlify/functions"
@@ -12,11 +12,7 @@
   # Node.js version
   NODE_VERSION = "18"
 
-# Redirect rules for SPA
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# No redirects needed for API-only site
 
 # Headers for security
 [[headers]]
@@ -29,7 +25,7 @@
 
 # Headers for API functions
 [[headers]]
-  for = "/api/*"
+  for = "/.netlify/functions/*"
   [headers.values]
     Access-Control-Allow-Origin = "https://toastebikepolo.com, https://toastebikepolo.ca"
     Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"

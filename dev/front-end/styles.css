@@ -7,6 +7,8 @@
 @font-face {
     font-family: 'FKRasterGrotesk';
     src: url('assets/fonts/FKRasterGrotesk-Smooth.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
     font-display: swap;
 }
 
@@ -35,6 +37,7 @@ body {
     background-color: var(--background-color);
     color: var(--text-color);
     font-family: 'FKRasterGrotesk', sans-serif;
+    font-weight: normal;
     line-height: 1.6;
     padding: 2rem;
     max-width: 1200px;
@@ -46,6 +49,10 @@ body {
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
     min-height: 100vh;
+    /* Font rendering consistency */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 h1, h2 {

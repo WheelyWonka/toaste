@@ -91,7 +91,6 @@ label {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: bold;
-    text-transform: uppercase;
     font-size: 1.1rem;
 }
 
@@ -246,7 +245,7 @@ footer p:last-child {
 
 .section-header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     margin-bottom: 2rem;
     gap: 1rem;
 }
@@ -262,7 +261,6 @@ footer p:last-child {
 
 .section-header h2 {
     margin: 0;
-    padding-top: 0.5rem;
     line-height: 1.2;
 }
 

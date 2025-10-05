@@ -59,15 +59,22 @@ function handleCORS(event) {
 }
 
 exports.handler = async (event, context) => {
-  // Handle CORS
-  const corsHeaders = handleCORS(event);
+  // Handle CORS preflight first (before any other processing)
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
-      headers: corsHeaders,
+      headers: {
+        'Access-Control-Allow-Origin': 'https://toastebikepolo.com, https://toastebikepolo.ca, https://preprod.toastebikepolo.ca',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Max-Age': '86400'
+      },
       body: ''
     };
   }
+
+  // Handle CORS for other methods
+  const corsHeaders = handleCORS(event);
 
   try {
     if (event.httpMethod === 'POST') {

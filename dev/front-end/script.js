@@ -728,18 +728,96 @@ async function createOrderInAPI(orderData) {
     }
 }
 
+// Form validation functions
+function validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function validateName(name) {
+    return name.trim().length > 0;
+}
+
+function validateAddress(address) {
+    return address.trim().length > 0;
+}
+
+function showFieldError(fieldId, message) {
+    const field = document.getElementById(fieldId);
+    const formGroup = field.closest('.form-group');
+    
+    // Remove existing error
+    const existingError = formGroup.querySelector('.field-error');
+    if (existingError) {
+        existingError.remove();
+    }
+    
+    // Add error class to field
+    field.classList.add('error');
+    
+    // Create error message
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'field-error';
+    errorDiv.textContent = message;
+    formGroup.appendChild(errorDiv);
+}
+
+function clearFieldError(fieldId) {
+    const field = document.getElementById(fieldId);
+    const formGroup = field.closest('.form-group');
+    
+    // Remove error class
+    field.classList.remove('error');
+    
+    // Remove error message
+    const existingError = formGroup.querySelector('.field-error');
+    if (existingError) {
+        existingError.remove();
+    }
+}
+
+function validateForm() {
+    let isValid = true;
+    
+    // Validate name
+    const name = document.getElementById('name').value;
+    if (!validateName(name)) {
+        showFieldError('name', 'Please enter your name');
+        isValid = false;
+    } else {
+        clearFieldError('name');
+    }
+    
+    // Validate email
+    const email = document.getElementById('email').value;
+    if (!email.trim()) {
+        showFieldError('email', 'Please enter your email');
+        isValid = false;
+    } else if (!validateEmail(email)) {
+        showFieldError('email', 'Please enter a valid email address');
+        isValid = false;
+    } else {
+        clearFieldError('email');
+    }
+    
+    // Validate address
+    const address = document.getElementById('address').value;
+    if (!validateAddress(address)) {
+        showFieldError('address', 'Please enter your address');
+        isValid = false;
+    } else {
+        clearFieldError('address');
+    }
+    
+    return isValid;
+}
+
 // Handle customer form submission
-// Handle customer form submission (go to review)
 customerForm.addEventListener('submit', (e) => {
     e.preventDefault();
     
     // Validate form
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const address = document.getElementById('address').value;
-    
-    if (!name || !email || !address) {
-        alert('Please fill in all required fields');
+    if (!validateForm()) {
         return;
     }
     
@@ -751,6 +829,47 @@ customerForm.addEventListener('submit', (e) => {
     // Scroll to title of review section with some space above
     const reviewTitle = reviewSection.querySelector('.section-header');
     reviewTitle.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+
+// Add real-time validation
+document.getElementById('name').addEventListener('blur', () => {
+    const name = document.getElementById('name').value;
+    if (name && !validateName(name)) {
+        showFieldError('name', 'Please enter your name');
+    } else {
+        clearFieldError('name');
+    }
+});
+
+document.getElementById('email').addEventListener('blur', () => {
+    const email = document.getElementById('email').value;
+    if (email && !validateEmail(email)) {
+        showFieldError('email', 'Please enter a valid email address');
+    } else {
+        clearFieldError('email');
+    }
+});
+
+document.getElementById('address').addEventListener('blur', () => {
+    const address = document.getElementById('address').value;
+    if (address && !validateAddress(address)) {
+        showFieldError('address', 'Please enter your address');
+    } else {
+        clearFieldError('address');
+    }
+});
+
+// Clear errors when user starts typing
+document.getElementById('name').addEventListener('input', () => {
+    clearFieldError('name');
+});
+
+document.getElementById('email').addEventListener('input', () => {
+    clearFieldError('email');
+});
+
+document.getElementById('address').addEventListener('input', () => {
+    clearFieldError('address');
 });
 
 // Update review display

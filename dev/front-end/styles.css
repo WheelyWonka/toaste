@@ -125,6 +125,26 @@ textarea {
     resize: vertical;
 }
 
+/* Form validation styles */
+input.error, textarea.error {
+    border-color: #ff4444;
+    box-shadow: 4px 4px 0 #ff4444;
+    background-color: #ffe6e6;
+}
+
+.field-error {
+    color: #ff4444;
+    font-size: 0.875rem;
+    font-weight: bold;
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background-color: #ffe6e6;
+    border: 2px solid #ff4444;
+    box-shadow: 2px 2px 0 #ff4444;
+    transform: rotate(-0.5deg);
+    font-family: 'FKRasterGrotesk', sans-serif;
+}
+
 .submit-btn {
     background-color: var(--text-color);
     color: var(--accent-color);

@@ -84,5 +84,12 @@
   "footer": {
     "madeIn": "Made in Montréal, Québec, Canada",
     "copyright": "© 2024 Toasté Bike Polo. All rights reserved."
+  },
+  "errorModal": {
+    "title": "Oops! Something went wrong 😅",
+    "message1": "We're really sorry, but something went wrong while processing your order. There's a high chance it's the fault of the developer who worked on this website.",
+    "message2": "Don't worry though! You can still contact Germain directly by email:",
+    "email": "toastebikepolo@pronton.me",
+    "tryAgain": "Try again?"
   }
 } 

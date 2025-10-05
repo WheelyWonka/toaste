@@ -142,6 +142,38 @@ function clearOrderFromStorage() {
     }
 }
 
+// Show error modal
+function showErrorModal() {
+    const errorModal = document.getElementById('error-modal');
+    errorModal.style.display = 'flex';
+}
+
+// Close error modal (global function for onclick)
+window.closeErrorModal = function() {
+    const errorModal = document.getElementById('error-modal');
+    errorModal.style.display = 'none';
+    
+    // Reset submit button to initial state
+    const submitBtn = document.querySelector('#order-review .submit-btn');
+    submitBtn.textContent = i18n.t('review.submit');
+    submitBtn.disabled = false;
+    
+    // Force reset all styles that might be affected by disabled state
+    submitBtn.style.opacity = '';
+    submitBtn.style.cursor = '';
+    submitBtn.style.transform = '';
+    submitBtn.style.boxShadow = '';
+    
+    // Remove any disabled class if it exists
+    submitBtn.classList.remove('disabled');
+    
+    console.log('Button reset:', {
+        text: submitBtn.textContent,
+        disabled: submitBtn.disabled,
+        opacity: submitBtn.style.opacity
+    });
+}
+
 // Pricing configuration
 const PRICING = {
     basePrice: 45.00, // Base price per wheel cover
@@ -807,6 +839,7 @@ document.querySelector('#order-review .submit-btn').addEventListener('click', as
         const originalText = submitBtn.textContent;
         submitBtn.textContent = 'Submitting Order...';
         submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.6';
 
         // Create order via API
         const result = await createOrderInAPI(formData);
@@ -829,12 +862,15 @@ document.querySelector('#order-review .submit-btn').addEventListener('click', as
 
     } catch (error) {
         console.error('Error submitting order:', error);
-        alert('There was an error submitting your order. Please try again.');
         
-        // Reset button state
+        // Show custom error modal
+        showErrorModal();
+        
+        // Update button text to "Try again?"
         const submitBtn = document.querySelector('#order-review .submit-btn');
-        submitBtn.textContent = originalText;
+        submitBtn.textContent = i18n.t('errorModal.tryAgain');
         submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
     }
 });
 

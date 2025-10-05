@@ -199,10 +199,23 @@
             </div>
         </div>
 
-        <footer>
-            <p data-i18n="footer.madeIn">Made in Montréal, Québec, Canada</p>
-            <p data-i18n="footer.copyright">© 2024 Toasté Bike Polo. All rights reserved.</p>
-        </footer>
+    <!-- Error Modal -->
+    <div id="error-modal" class="error-modal" style="display: none;">
+        <div class="error-modal-content">
+            <h3 data-i18n="errorModal.title">Oops! Something went wrong 😅</h3>
+            <p data-i18n="errorModal.message1">We're really sorry, but something went wrong while processing your order. There's a high chance it's the fault of the developer who worked on this website.</p>
+            <p data-i18n="errorModal.message2">Don't worry though! You can still contact Germain directly by email:</p>
+            <p><strong data-i18n="errorModal.email">toastebikepolo@pronton.me</strong></p>
+            <div class="error-modal-actions">
+                <button type="button" class="error-modal-btn" onclick="closeErrorModal()" data-i18n="errorModal.tryAgain">Try again?</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p data-i18n="footer.madeIn">Made in Montréal, Québec, Canada</p>
+        <p data-i18n="footer.copyright">© 2024 Toasté Bike Polo. All rights reserved.</p>
+    </footer>
         </main>
     </div>
 </body>

@@ -27,7 +27,7 @@
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
-    Access-Control-Allow-Origin = "https://toastebikepolo.com, https://toastebikepolo.ca"
+    Access-Control-Allow-Origin = "https://toastebikepolo.com, https://toastebikepolo.ca, https://preprod.toastebikepolo.ca"
     Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization"
     Access-Control-Max-Age = "86400"

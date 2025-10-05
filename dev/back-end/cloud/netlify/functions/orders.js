@@ -1,9 +1,11 @@
 const Airtable = require('airtable');
 
-// Initialize Airtable
-const base = new Airtable({
-  apiKey: process.env.AIRTABLE_PAT
-}).base(process.env.AIRTABLE_BASE_ID);
+// Initialize Airtable (moved inside handler to avoid issues with OPTIONS requests)
+function getAirtableBase() {
+  return new Airtable({
+    apiKey: process.env.AIRTABLE_PAT
+  }).base(process.env.AIRTABLE_BASE_ID);
+}
 
 // Generate random order code
 function generateOrderCode() {
@@ -150,7 +152,7 @@ exports.handler = async (event, context) => {
 
       // Create order in Airtable
       const orderResult = await new Promise((resolve, reject) => {
-        base('Orders').create(orderRecord, (err, record) => {
+        getAirtableBase()('Orders').create(orderRecord, (err, record) => {
           if (err) reject(err);
           else resolve(record);
         });
@@ -167,7 +169,7 @@ exports.handler = async (event, context) => {
 
       // Create order item in Airtable
       const orderItemResult = await new Promise((resolve, reject) => {
-        base('Order Items').create(orderItemRecord, (err, record) => {
+        getAirtableBase()('Order Items').create(orderItemRecord, (err, record) => {
           if (err) reject(err);
           else resolve(record);
         });
@@ -221,7 +223,7 @@ exports.handler = async (event, context) => {
 
       // Find order by order code
       const orders = await new Promise((resolve, reject) => {
-        base('Orders').select({
+        getAirtableBase()('Orders').select({
           filterByFormula: `{Order Code} = "${orderCode}"`
         }).firstPage((err, records) => {
           if (err) reject(err);
@@ -244,7 +246,7 @@ exports.handler = async (event, context) => {
 
       // Get order items
       const orderItems = await new Promise((resolve, reject) => {
-        base('Order Items').select({
+        getAirtableBase()('Order Items').select({
           filterByFormula: `{Order} = "${order.id}"`
         }).firstPage((err, records) => {
           if (err) reject(err);

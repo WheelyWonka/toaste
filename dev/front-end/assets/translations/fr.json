@@ -5,7 +5,7 @@
     "title": "Toasté Bike Polo - Protection de Roue Premium"
   },
   "productConfig": {
-    "title": "Configurez Votre Protection",
+    "title": "Qu'est-ce que tu veux poto ?",
     "spokeCount": {
       "label": "Nombre de Rayons :",
       "32": "32 rayons",
@@ -17,53 +17,69 @@
       "650b": "650b",
       "700": "700c"
     },
-    "continue": "Continuer vers Coordonnées →"
+    "quantity": {
+      "label": "Combien ? (5% de réduc' pour une paire)"
+    },
+    "addToCart": "Ajouter au Panier",
+    "continue": "C'est parti pour tes infos →"
+  },
+  "cart": {
+    "title": "Ton Panier",
+    "total": "Total : $"
   },
   "contactForm": {
-    "title": "Vos Coordonnées",
+    "title": "On envoie ça où ?",
     "fullName": {
-      "label": "Nom Complet :",
-      "placeholder": "Entrez votre nom complet"
+      "label": "Ton Nom :",
+      "placeholder": "Comment tu t'appelles ?"
     },
     "email": {
-      "label": "Email :",
-      "placeholder": "Entrez votre email"
+      "label": "Ton Email :",
+      "placeholder": "Ton adresse email"
     },
     "address": {
-      "label": "Adresse de Livraison :",
-      "placeholder": "Entrez votre adresse complète"
+      "label": "Où on t'envoie ça :",
+      "placeholder": "Ton adresse complète"
     },
     "notes": {
-      "label": "Notes Supplémentaires :",
-      "placeholder": "Des exigences particulières ?"
+      "label": "Autre chose à dire :",
+      "placeholder": "Des trucs particuliers ?"
     },
-    "back": "← Retour à la Configuration",
-    "submit": "Finaliser la Commande →"
+    "back": "← Retour à la Config",
+    "review": "On vérifie tout ça →"
+  },
+  "review": {
+    "title": "On vérifie ta commande",
+    "contactInfo": "Tes Infos",
+    "orderDetails": "Ce que tu commandes",
+    "total": "Total : $",
+    "back": "← Retour aux infos",
+    "submit": "C'est parti ! →"
   },
   "confirmation": {
-    "title": "Confirmation de Commande",
-    "orderCode": "Votre code de commande est :",
+    "title": "C'est bon !",
+    "orderCode": "Ton code de commande :",
     "payment": {
-      "instruction": "Veuillez envoyer votre paiement à :",
-      "note": "⚠️ N'oubliez pas d'inclure votre code de commande dans les détails du paiement"
+      "instruction": "Envoie ton paiement à :",
+      "note": "⚠️ N'oublie pas d'inclure ton code de commande dans les détails du paiement"
     }
   },
   "features": {
-    "title": "Pourquoi est-ce la meilleure protection ?",
-    "description": "Une protection de roue est un équipement essentiel en bike polo, conçu pour empêcher les maillets et les balles de se coincer dans les rayons pendant le jeu. Nos protections premium sont fabriquées avec des matériaux durables et conçues avec précision pour s'adapter à plusieurs tailles de roues. Elles améliorent non seulement la sécurité mais ajoutent aussi un look distinctif à votre équipement de bike polo, vous permettant de vous concentrer sur votre jeu en toute confiance."
+    "title": "Pourquoi c'est la meilleure protection ?",
+    "description": "Une protection de roue est un équipement essentiel en bike polo, conçu pour empêcher les maillets et les balles de se coincer dans les rayons pendant le jeu. Nos protections premium sont fabriquées avec des matériaux durables et conçues avec précision pour s'adapter à plusieurs tailles de roues. Elles améliorent non seulement la sécurité mais ajoutent aussi un look distinctif à ton équipement de bike polo, te permettant de te concentrer sur ton jeu en toute confiance."
   },
   "package": {
-    "title": "Que contient le package ?",
+    "title": "Qu'est-ce que tu reçois ?",
     "items": {
-      "cover": "Protection de roue premium dans la taille sélectionnée (26\", 650b, ou 700c)",
-      "hardware": "Kit de montage pour votre nombre de rayons (32 ou 36 rayons)",
+      "cover": "Protection de roue premium dans la taille que tu as choisie (26\", 650b, ou 700c)",
+      "hardware": "Kit de montage pour ton nombre de rayons (32 ou 36 rayons)",
       "guide": "Guide d'installation détaillé",
       "sticker": "Autocollant Toasté Bike Polo"
     }
   },
   "promo": {
-    "title": "Achetez une paire, obtenez 5% de réduction",
-    "description": "Parce que votre vélo a deux roues ! Commandez une paire de protections assorties et économisez 5% sur votre achat. Que vous ayez besoin de deux protections de la même taille ou de tailles différentes pour vos roues avant et arrière, la réduction s'applique à toute combinaison. Double protection, double style !"
+    "title": "Prends une paire, économise 5%",
+    "description": "Parce que ton vélo a deux roues ! Commande une paire de protections assorties et économise 5% sur ton achat. Que tu aies besoin de deux protections de la même taille ou de tailles différentes pour tes roues avant et arrière, la réduction s'applique à toute combinaison. Double protection, double style !"
   },
   "footer": {
     "copyright": "© 2024 Toasté Bike Polo. Tous droits réservés."

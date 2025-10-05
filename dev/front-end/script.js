@@ -8,16 +8,30 @@ const productForm = document.getElementById('product-form');
 const customerForm = document.getElementById('customer-form');
 const productSection = document.getElementById('product-selection');
 const contactSection = document.getElementById('contact-form');
+const reviewSection = document.getElementById('order-review');
 const confirmationSection = document.getElementById('confirmation');
 const orderCodeSpan = document.getElementById('order-code');
-const backButton = document.querySelector('.back-btn');
 
 // Button groups
 const spokeCountGroup = document.getElementById('spoke-count-group');
 const wheelSizeGroup = document.getElementById('wheel-size-group');
 const spokeCountInput = document.getElementById('spoke-count');
 const wheelSizeInput = document.getElementById('wheel-size');
-const submitBtn = productForm.querySelector('.submit-btn');
+
+// New cart elements
+const cartSummary = document.getElementById('cart-summary');
+const cartItems = document.getElementById('cart-items');
+const totalPriceSpan = document.getElementById('total-price');
+const quantityInput = document.getElementById('quantity');
+const quantityMinusBtn = document.getElementById('quantity-minus');
+const quantityPlusBtn = document.getElementById('quantity-plus');
+const addToCartBtn = document.querySelector('.add-to-cart-btn');
+const continueBtn = document.querySelector('.continue-btn');
+
+// Review elements
+const reviewContactInfo = document.getElementById('review-contact-info');
+const reviewOrderItems = document.getElementById('review-order-items');
+const reviewTotalPrice = document.getElementById('review-total-price');
 
 // Store product selection
 let selectedProducts = []; // Array of {spokeCount, wheelSize, quantity}
@@ -26,6 +40,121 @@ let currentProduct = {
     wheelSize: '',
     quantity: 1
 };
+
+// Pricing configuration
+const PRICING = {
+    basePrice: 45.00, // Base price per wheel cover
+    pairDiscount: 0.05 // 5% discount for pairs
+};
+
+// Calculate price for a product
+function calculateProductPrice(product) {
+    return PRICING.basePrice * product.quantity;
+}
+
+// Calculate total price with pair discount
+function calculateTotalPrice(products) {
+    let total = products.reduce((sum, product) => sum + calculateProductPrice(product), 0);
+    
+    // Apply 5% discount if total quantity is 2 or more
+    const totalQuantity = products.reduce((sum, product) => sum + product.quantity, 0);
+    if (totalQuantity >= 2) {
+        total *= (1 - PRICING.pairDiscount);
+    }
+    
+    return total;
+}
+
+// Update cart display
+function updateCartDisplay() {
+    if (selectedProducts.length === 0) {
+        cartSummary.style.display = 'none';
+        continueBtn.disabled = true;
+        return;
+    }
+    
+    cartSummary.style.display = 'block';
+    continueBtn.disabled = false;
+    
+    cartItems.innerHTML = '';
+    selectedProducts.forEach((product, index) => {
+        const cartItem = document.createElement('div');
+        cartItem.className = 'cart-item';
+        cartItem.innerHTML = `
+            <div class="cart-item-info">
+                <div class="cart-item-quantity">${product.quantity}x</div>
+                <div class="cart-item-details">${product.spokeCount} spokes, ${product.wheelSize}</div>
+            </div>
+            <div class="cart-item-price">CAD$${calculateProductPrice(product).toFixed(2)}</div>
+            <button type="button" class="remove-item-btn" onclick="removeFromCart(${index})">×</button>
+        `;
+        cartItems.appendChild(cartItem);
+    });
+    
+    const total = calculateTotalPrice(selectedProducts);
+    totalPriceSpan.textContent = total.toFixed(2);
+}
+
+// Add product to cart
+function addToCart() {
+    if (!currentProduct.spokeCount || !currentProduct.wheelSize) {
+        alert('Please select both spoke count and wheel size');
+        return;
+    }
+    
+    // Check if this exact combination already exists
+    const existingIndex = selectedProducts.findIndex(p => 
+        p.spokeCount === currentProduct.spokeCount && 
+        p.wheelSize === currentProduct.wheelSize
+    );
+    
+    if (existingIndex !== -1) {
+        // Update quantity of existing item
+        selectedProducts[existingIndex].quantity += currentProduct.quantity;
+    } else {
+        // Add new item
+        selectedProducts.push({
+            spokeCount: currentProduct.spokeCount,
+            wheelSize: currentProduct.wheelSize,
+            quantity: currentProduct.quantity
+        });
+    }
+    
+    // Reset current product
+    currentProduct = {
+        spokeCount: '',
+        wheelSize: '',
+        quantity: 1
+    };
+    
+    // Reset form
+    resetProductForm();
+    updateCartDisplay();
+    
+    // Scroll to cart title to show the updated order
+    const cartTitle = cartSummary.querySelector('h3');
+    cartTitle.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// Remove item from cart (global function for onclick)
+window.removeFromCart = function(index) {
+    selectedProducts.splice(index, 1);
+    updateCartDisplay();
+};
+
+// Reset product form
+function resetProductForm() {
+    // Clear selections
+    document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+    spokeCountInput.value = '';
+    wheelSizeInput.value = '';
+    quantityInput.value = 1;
+    currentProduct.quantity = 1;
+    
+    // Disable buttons
+    addToCartBtn.disabled = true;
+    continueBtn.disabled = selectedProducts.length === 0;
+}
 
 // Three.js setup for main scene
 let scene, camera, renderer, controls, model;
@@ -329,8 +458,8 @@ function handleOptionClick(group, input, value) {
         currentProduct.wheelSize = value;
     }
     
-    // Enable submit button if both options are selected
-    submitBtn.disabled = !(currentProduct.spokeCount && currentProduct.wheelSize);
+    // Enable add to cart button if both options are selected
+    addToCartBtn.disabled = !(currentProduct.spokeCount && currentProduct.wheelSize);
 }
 
 // Add click handlers to spoke count buttons
@@ -347,21 +476,41 @@ wheelSizeGroup.querySelectorAll('.option-btn').forEach(button => {
     });
 });
 
-// Handle product form submission
-productForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    if (!currentProduct.spokeCount || !currentProduct.wheelSize) {
-        alert('Please select both spoke count and wheel size');
+// Quantity controls
+quantityMinusBtn.addEventListener('click', () => {
+    if (currentProduct.quantity > 1) {
+        currentProduct.quantity--;
+        quantityInput.value = currentProduct.quantity;
+    }
+});
+
+quantityPlusBtn.addEventListener('click', () => {
+    if (currentProduct.quantity < 10) {
+        currentProduct.quantity++;
+        quantityInput.value = currentProduct.quantity;
+    }
+});
+
+// Add to cart button
+addToCartBtn.addEventListener('click', addToCart);
+
+// Continue to contact info
+continueBtn.addEventListener('click', () => {
+    if (selectedProducts.length === 0) {
+        alert('Please add at least one item to your cart');
         return;
     }
     
-    // Add current product to selected products array
-    selectedProducts.push({
-        spokeCount: currentProduct.spokeCount,
-        wheelSize: currentProduct.wheelSize,
-        quantity: currentProduct.quantity
-    });
+    productSection.style.display = 'none';
+    contactSection.style.display = 'block';
+});
+
+// Cart total button click to continue
+document.getElementById('cart-total-btn').addEventListener('click', () => {
+    if (selectedProducts.length === 0) {
+        alert('Please add at least one item to your cart');
+        return;
+    }
     
     productSection.style.display = 'none';
     contactSection.style.display = 'block';
@@ -414,20 +563,92 @@ async function createOrderInAPI(orderData) {
 }
 
 // Handle customer form submission
-customerForm.addEventListener('submit', async (e) => {
+// Handle customer form submission (go to review)
+customerForm.addEventListener('submit', (e) => {
     e.preventDefault();
     
+    // Validate form
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const address = document.getElementById('address').value;
+    
+    if (!name || !email || !address) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    // Show review section
+    contactSection.style.display = 'none';
+    reviewSection.style.display = 'block';
+    updateReviewDisplay();
+});
+
+// Update review display
+function updateReviewDisplay() {
+    // Contact info
+    reviewContactInfo.innerHTML = `
+        <div class="review-contact-item">
+            <span class="review-contact-label">Name:</span> ${document.getElementById('name').value}
+        </div>
+        <div class="review-contact-item">
+            <span class="review-contact-label">Email:</span> ${document.getElementById('email').value}
+        </div>
+        <div class="review-contact-item">
+            <span class="review-contact-label">Address:</span> ${document.getElementById('address').value}
+        </div>
+        ${document.getElementById('notes').value ? `
+        <div class="review-contact-item">
+            <span class="review-contact-label">Notes:</span> ${document.getElementById('notes').value}
+        </div>
+        ` : ''}
+    `;
+    
+    // Order items
+    reviewOrderItems.innerHTML = '';
+    selectedProducts.forEach(product => {
+        const orderItem = document.createElement('div');
+        orderItem.className = 'review-order-item';
+        orderItem.innerHTML = `
+            <div>
+                <strong>${product.quantity}x</strong> ${product.spokeCount} spokes, ${product.wheelSize}
+            </div>
+            <div>CAD$${calculateProductPrice(product).toFixed(2)}</div>
+        `;
+        reviewOrderItems.appendChild(orderItem);
+    });
+    
+    // Show pair discount if applicable
+    const totalQuantity = selectedProducts.reduce((sum, product) => sum + product.quantity, 0);
+    if (totalQuantity >= 2) {
+        const subtotal = selectedProducts.reduce((sum, product) => sum + calculateProductPrice(product), 0);
+        const discountAmount = subtotal * PRICING.pairDiscount;
+        const discountItem = document.createElement('div');
+        discountItem.className = 'review-order-item';
+        discountItem.innerHTML = `
+            <div><em>5% Pair Discount</em></div>
+            <div>-CAD$${discountAmount.toFixed(2)}</div>
+        `;
+        reviewOrderItems.appendChild(discountItem);
+    }
+    
+    // Total
+    const total = calculateTotalPrice(selectedProducts);
+    reviewTotalPrice.textContent = total.toFixed(2);
+}
+
+// Handle final order submission
+document.querySelector('#order-review .submit-btn').addEventListener('click', async () => {
     const formData = {
-        products: selectedProducts, // Array of {spokeCount, wheelSize, quantity}
+        products: selectedProducts,
         customerName: document.getElementById('name').value,
         customerEmail: document.getElementById('email').value,
         shippingAddress: document.getElementById('address').value,
         notes: document.getElementById('notes').value
     };
-
+    
     try {
         // Show loading state
-        const submitBtn = customerForm.querySelector('.submit-btn');
+        const submitBtn = document.querySelector('#order-review .submit-btn');
         const originalText = submitBtn.textContent;
         submitBtn.textContent = 'Submitting Order...';
         submitBtn.disabled = true;
@@ -437,7 +658,7 @@ customerForm.addEventListener('submit', async (e) => {
 
         if (result.success) {
             // Show confirmation
-            contactSection.style.display = 'none';
+            reviewSection.style.display = 'none';
             confirmationSection.style.display = 'block';
             orderCodeSpan.textContent = result.orderCode;
         } else {
@@ -449,14 +670,19 @@ customerForm.addEventListener('submit', async (e) => {
         alert('There was an error submitting your order. Please try again.');
         
         // Reset button state
-        const submitBtn = customerForm.querySelector('.submit-btn');
+        const submitBtn = document.querySelector('#order-review .submit-btn');
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
     }
 });
 
-// Handle back button click
-backButton.addEventListener('click', () => {
+// Handle back button clicks
+document.querySelector('#contact-form .back-btn').addEventListener('click', () => {
     contactSection.style.display = 'none';
     productSection.style.display = 'block';
+});
+
+document.querySelector('#order-review .back-btn').addEventListener('click', () => {
+    reviewSection.style.display = 'none';
+    contactSection.style.display = 'block';
 }); 

@@ -32,6 +32,16 @@
                         <span class="section-number">01</span>
                         <h2 data-i18n="productConfig.title">Configure Your Wheel Cover</h2>
                     </div>
+                    
+                    <!-- Cart Summary -->
+                    <div id="cart-summary" class="cart-summary" style="display: none;">
+                        <h3 data-i18n="cart.title">Your Order</h3>
+                        <div id="cart-items"></div>
+                        <div class="cart-total" id="cart-total-btn">
+                            <strong>Total: CAD$<span id="total-price">0.00</span> →</strong>
+                        </div>
+                    </div>
+                    
                     <form id="product-form">
                         <div class="form-group">
                             <label data-i18n="productConfig.spokeCount.label">Number of Spokes:</label>
@@ -52,7 +62,19 @@
                             <input type="hidden" id="wheel-size" name="wheel-size" required>
                         </div>
 
-                        <button type="submit" class="submit-btn" disabled data-i18n="productConfig.continue">Continue to Contact Info →</button>
+                        <div class="form-group">
+                            <label data-i18n="productConfig.quantity.label">Quantity:</label>
+                            <div class="quantity-selector">
+                                <button type="button" class="quantity-btn" id="quantity-minus">-</button>
+                                <input type="number" id="quantity" name="quantity" value="1" min="1" max="10" readonly>
+                                <button type="button" class="quantity-btn" id="quantity-plus">+</button>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="add-to-cart-btn" disabled data-i18n="productConfig.addToCart">Add to Cart</button>
+                            <button type="button" class="continue-btn" disabled data-i18n="productConfig.continue">Continue to Contact Info →</button>
+                        </div>
                     </form>
                 </section>
 
@@ -84,14 +106,38 @@
 
                         <div class="button-group">
                             <button type="button" class="back-btn" data-i18n="contactForm.back">← Back to Configuration</button>
-                            <button type="submit" class="submit-btn" data-i18n="contactForm.submit">Complete Order →</button>
+                            <button type="button" class="submit-btn" data-i18n="contactForm.review">Review Order →</button>
                         </div>
                     </form>
                 </section>
 
-                <section id="confirmation" style="display: none;">
+                <section id="order-review" style="display: none;">
                     <div class="section-header">
                         <span class="section-number">03</span>
+                        <h2 data-i18n="review.title">Review Your Order</h2>
+                    </div>
+                    <div class="review-content">
+                        <div class="review-section">
+                            <h3 data-i18n="review.contactInfo">Contact Information</h3>
+                            <div id="review-contact-info"></div>
+                        </div>
+                        <div class="review-section">
+                            <h3 data-i18n="review.orderDetails">Order Details</h3>
+                            <div id="review-order-items"></div>
+                            <div class="review-total">
+                                <strong>Total: CAD$<span id="review-total-price">0.00</span></strong>
+                            </div>
+                        </div>
+                        <div class="button-group">
+                            <button type="button" class="back-btn" data-i18n="review.back">← Back to Contact Info</button>
+                            <button type="button" class="submit-btn" data-i18n="review.submit">Complete Order →</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="confirmation" style="display: none;">
+                    <div class="section-header">
+                        <span class="section-number">04</span>
                         <h2 data-i18n="confirmation.title">Order Confirmation</h2>
                     </div>
                     <div class="confirmation-content">

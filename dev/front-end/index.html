@@ -35,15 +35,6 @@
                         <h2 data-i18n="productConfig.title">Configure Your Wheel Cover</h2>
                     </div>
                     
-                    <!-- Cart Summary -->
-                    <div id="cart-summary" class="cart-summary" style="display: none;">
-                        <h3 data-i18n="cart.title">Your Order</h3>
-                        <div id="cart-items"></div>
-                        <div class="cart-total" id="cart-total-btn">
-                            <strong>Subtotal: CAD$<span id="total-price">0.00</span> →</strong>
-                        </div>
-                    </div>
-                    
                     <form id="product-form">
                         <div class="form-group">
                             <label data-i18n="productConfig.spokeCount.label">Number of Spokes:</label>
@@ -75,9 +66,17 @@
 
                         <div class="form-actions">
                             <button type="button" class="add-to-cart-btn" disabled data-i18n="productConfig.addToCart">Add to Cart</button>
-                            <button type="button" class="continue-btn" disabled data-i18n="productConfig.continue">Continue to Contact Info →</button>
                         </div>
                     </form>
+                    
+                    <!-- Cart Summary -->
+                    <div id="cart-summary" class="cart-summary" style="display: none;">
+                        <h3 data-i18n="cart.title">Your Order</h3>
+                        <div id="cart-items"></div>
+                        <div class="cart-total" id="cart-total-btn">
+                            <strong>CAD$<span id="total-price">0.00</span> →</strong>
+                        </div>
+                    </div>
                 </section>
 
                 <section id="contact-form" style="display: none;">

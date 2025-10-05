@@ -26,7 +26,7 @@ const quantityInput = document.getElementById('quantity');
 const quantityMinusBtn = document.getElementById('quantity-minus');
 const quantityPlusBtn = document.getElementById('quantity-plus');
 const addToCartBtn = document.querySelector('.add-to-cart-btn');
-const continueBtn = document.querySelector('.continue-btn');
+// Continue button removed - using cart total button instead
 
 // Review elements
 const reviewContactInfo = document.getElementById('review-contact-info');
@@ -154,7 +154,12 @@ function calculateProductPrice(product) {
     return PRICING.basePrice * product.quantity;
 }
 
-// Calculate total price with pair discount and taxes
+// Calculate cart subtotal without discount (for step 1)
+function calculateCartSubtotal(products) {
+    return products.reduce((sum, product) => sum + calculateProductPrice(product), 0);
+}
+
+// Calculate total price with pair discount and taxes (for step 3)
 function calculateTotalPrice(products) {
     let subtotal = products.reduce((sum, product) => sum + calculateProductPrice(product), 0);
     
@@ -179,12 +184,10 @@ function calculateTotalPrice(products) {
 function updateCartDisplay() {
     if (selectedProducts.length === 0) {
         cartSummary.style.display = 'none';
-        continueBtn.disabled = true;
         return;
     }
     
     cartSummary.style.display = 'block';
-    continueBtn.disabled = false;
     
     cartItems.innerHTML = '';
     selectedProducts.forEach((product, index) => {
@@ -201,8 +204,8 @@ function updateCartDisplay() {
         cartItems.appendChild(cartItem);
     });
     
-    const pricing = calculateTotalPrice(selectedProducts);
-    totalPriceSpan.textContent = pricing.subtotal.toFixed(2);
+    const cartSubtotal = calculateCartSubtotal(selectedProducts);
+    totalPriceSpan.textContent = cartSubtotal.toFixed(2);
 }
 
 // Add product to cart
@@ -268,9 +271,8 @@ function resetProductForm() {
     quantityInput.value = 1;
     currentProduct.quantity = 1;
     
-    // Disable buttons
+    // Disable add to cart button
     addToCartBtn.disabled = true;
-    continueBtn.disabled = selectedProducts.length === 0;
 }
 
 // Three.js setup for main scene
@@ -618,19 +620,7 @@ quantityPlusBtn.addEventListener('click', () => {
 // Add to cart button
 addToCartBtn.addEventListener('click', addToCart);
 
-// Continue to contact info
-continueBtn.addEventListener('click', () => {
-    if (selectedProducts.length === 0) {
-        alert('Please add at least one item to your cart');
-        return;
-    }
-    
-    productSection.style.display = 'none';
-    contactSection.style.display = 'block';
-    
-    // Scroll to top of contact section
-    contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-});
+// Continue button removed - functionality moved to cart total button
 
 // Cart total button click to continue
 document.getElementById('cart-total-btn').addEventListener('click', () => {
@@ -642,8 +632,9 @@ document.getElementById('cart-total-btn').addEventListener('click', () => {
     productSection.style.display = 'none';
     contactSection.style.display = 'block';
     
-    // Scroll to top of contact section
-    contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Scroll to title of contact section with some space above
+    const contactTitle = contactSection.querySelector('.section-header');
+    contactTitle.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
 // Generate random order code
@@ -712,8 +703,9 @@ customerForm.addEventListener('submit', (e) => {
     reviewSection.style.display = 'block';
     updateReviewDisplay();
     
-    // Scroll to top of review section
-    reviewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Scroll to title of review section with some space above
+    const reviewTitle = reviewSection.querySelector('.section-header');
+    reviewTitle.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
 // Update review display
@@ -818,8 +810,9 @@ document.querySelector('#order-review .submit-btn').addEventListener('click', as
             confirmationSection.style.display = 'block';
             orderCodeSpan.textContent = result.orderCode;
             
-            // Scroll to top of confirmation section
-            confirmationSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Scroll to title of confirmation section with some space above
+            const confirmationTitle = confirmationSection.querySelector('.section-header');
+            confirmationTitle.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else {
             throw new Error(result.error);
         }
@@ -839,11 +832,19 @@ document.querySelector('#order-review .submit-btn').addEventListener('click', as
 document.querySelector('#contact-form .back-btn').addEventListener('click', () => {
     contactSection.style.display = 'none';
     productSection.style.display = 'block';
+    
+    // Scroll to title of product section with some space above
+    const productTitle = productSection.querySelector('.section-header');
+    productTitle.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
 document.querySelector('#order-review .back-btn').addEventListener('click', () => {
     reviewSection.style.display = 'none';
     contactSection.style.display = 'block';
+    
+    // Scroll to title of contact section with some space above
+    const contactTitle = contactSection.querySelector('.section-header');
+    contactTitle.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
 // Save contact info to localStorage as user types

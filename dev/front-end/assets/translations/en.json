@@ -51,7 +51,7 @@
   "review": {
     "title": "Let's check your order",
     "contactInfo": "Your Info",
-    "orderDetails": "What you're ordering",
+    "orderDetails": "Your order",
     "total": "Total: $",
     "back": "← Back to your info",
     "submit": "Let's do this! →"

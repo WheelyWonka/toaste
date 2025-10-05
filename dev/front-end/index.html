@@ -32,7 +32,7 @@
                 <section id="product-selection">
                     <div class="section-header">
                         <span class="section-number">01</span>
-                        <h2 data-i18n="productConfig.title">Configure Your Wheel Cover</h2>
+                        <h2 data-i18n="productConfig.title">What do you need homie?</h2>
                     </div>
                     
                     <form id="product-form">
@@ -56,7 +56,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label data-i18n="productConfig.quantity.label">Quantity:</label>
+                            <label data-i18n="productConfig.quantity.label">How much? (5% off for a pair)</label>
                             <div class="quantity-selector">
                                 <button type="button" class="quantity-btn" id="quantity-minus">-</button>
                                 <input type="number" id="quantity" name="quantity" value="1" min="1" max="10" readonly>
@@ -71,7 +71,7 @@
                     
                     <!-- Cart Summary -->
                     <div id="cart-summary" class="cart-summary" style="display: none;">
-                        <h3 data-i18n="cart.title">Your Order</h3>
+                        <h3 data-i18n="cart.title">Your Cart</h3>
                         <div id="cart-items"></div>
                         <div class="cart-total" id="cart-total-btn">
                             <strong>CAD$<span id="total-price">0.00</span> →</strong>
@@ -82,32 +82,32 @@
                 <section id="contact-form" style="display: none;">
                     <div class="section-header">
                         <span class="section-number">02</span>
-                        <h2 data-i18n="contactForm.title">Your Contact Information</h2>
+                        <h2 data-i18n="contactForm.title">Where do we ship that?</h2>
                     </div>
                     <form id="customer-form">
                         <div class="form-group">
-                            <label for="name" data-i18n="contactForm.fullName.label">Full Name:</label>
-                            <input type="text" id="name" name="name" required data-i18n="contactForm.fullName.placeholder" placeholder="Enter your full name">
+                            <label for="name" data-i18n="contactForm.fullName.label">Your Name:</label>
+                            <input type="text" id="name" name="name" required data-i18n="contactForm.fullName.placeholder" placeholder="What's your name?">
                         </div>
 
                         <div class="form-group">
-                            <label for="email" data-i18n="contactForm.email.label">Email:</label>
-                            <input type="email" id="email" name="email" required data-i18n="contactForm.email.placeholder" placeholder="Enter your email">
+                            <label for="email" data-i18n="contactForm.email.label">Your Email:</label>
+                            <input type="email" id="email" name="email" required data-i18n="contactForm.email.placeholder" placeholder="Your email address">
                         </div>
 
                         <div class="form-group">
-                            <label for="address" data-i18n="contactForm.address.label">Shipping Address:</label>
-                            <textarea id="address" name="address" required data-i18n="contactForm.address.placeholder" placeholder="Enter your complete shipping address"></textarea>
+                            <label for="address" data-i18n="contactForm.address.label">Your Address:</label>
+                            <textarea id="address" name="address" required data-i18n="contactForm.address.placeholder" placeholder="Your complete address"></textarea>
                         </div>
 
                         <div class="form-group">
-                            <label for="notes" data-i18n="contactForm.notes.label">Additional Notes:</label>
-                            <textarea id="notes" name="notes" data-i18n="contactForm.notes.placeholder" placeholder="Any special requirements?"></textarea>
+                            <label for="notes" data-i18n="contactForm.notes.label">Anything else:</label>
+                            <textarea id="notes" name="notes" data-i18n="contactForm.notes.placeholder" placeholder="Any special requests?"></textarea>
                         </div>
 
                         <div class="form-actions">
-                            <button type="button" class="back-btn" data-i18n="contactForm.back">← Back to Configuration</button>
-                            <button type="submit" class="submit-btn" data-i18n="contactForm.review">Review Order →</button>
+                            <button type="button" class="back-btn" data-i18n="contactForm.back">← Back to Config</button>
+                            <button type="submit" class="submit-btn" data-i18n="contactForm.review">Let's check everything →</button>
                         </div>
                     </form>
                 </section>
@@ -115,23 +115,23 @@
                 <section id="order-review" style="display: none;">
                     <div class="section-header">
                         <span class="section-number">03</span>
-                        <h2 data-i18n="review.title">Review Your Order</h2>
+                        <h2 data-i18n="review.title">Let's check your order</h2>
                     </div>
                     <div class="review-content">
                         <div class="review-section">
-                            <h3 data-i18n="review.contactInfo">Contact Information</h3>
+                            <h3 data-i18n="review.contactInfo">Your Info</h3>
                             <div id="review-contact-info"></div>
                         </div>
                         <div class="review-section">
-                            <h3 data-i18n="review.orderDetails">Order Details</h3>
+                            <h3 data-i18n="review.orderDetails">Your order</h3>
                             <div id="review-order-items"></div>
                             <div class="review-total">
                                 <strong>Total: CAD$<span id="review-total-price">0.00</span></strong>
                             </div>
                         </div>
                         <div class="form-actions">
-                            <button type="button" class="back-btn" data-i18n="review.back">← Back to Contact Info</button>
-                            <button type="button" class="submit-btn" data-i18n="review.submit">Complete Order →</button>
+                            <button type="button" class="back-btn" data-i18n="review.back">← Back to your info</button>
+                            <button type="button" class="submit-btn" data-i18n="review.submit">Let's do this! →</button>
                         </div>
                     </div>
                 </section>
@@ -139,17 +139,17 @@
                 <section id="confirmation" style="display: none;">
                     <div class="section-header">
                         <span class="section-number">04</span>
-                        <h2 data-i18n="confirmation.title">Order Confirmation</h2>
+                        <h2 data-i18n="confirmation.title">You're all set!</h2>
                     </div>
                     <div class="confirmation-content">
                         <div class="order-code-container">
-                            <p data-i18n="confirmation.orderCode">Your order code is:</p>
+                            <p data-i18n="confirmation.orderCode">Your order code:</p>
                             <span id="order-code" class="highlight"></span>
                         </div>
                         <div class="payment-info">
-                            <p data-i18n="confirmation.payment.instruction">Please send your payment to:</p>
+                            <p data-i18n="confirmation.payment.instruction">Send your payment to:</p>
                             <span class="highlight">payment@toastebikepolo.com</span>
-                            <p class="important-note" data-i18n="confirmation.payment.note">⚠️ Make sure to include your order code in the payment details</p>
+                            <p class="important-note" data-i18n="confirmation.payment.note">⚠️ Don't forget to include your order code in the payment details</p>
                         </div>
                     </div>
                 </section>
@@ -170,11 +170,11 @@
         </div>
 
         <div class="package-info">
-            <h2 data-i18n="package.title">What does the package contain?</h2>
+            <h2 data-i18n="package.title">What's in the package?</h2>
             <div class="package-grid">
                 <div class="package-item">
                     <div class="illustration-placeholder"></div>
-                    <p data-i18n="package.items.cover">Premium wheel cover in your selected size (26", 650b, or 700c)</p>
+                    <p data-i18n="package.items.cover">Premium wheel cover in the size you picked (26", 650b, or 700c)</p>
                 </div>
                 <div class="package-item">
                     <div class="illustration-placeholder"></div>
@@ -194,7 +194,7 @@
         <div class="promo-section">
             <div class="promo-content">
                 <div id="promo-model-container" class="promo-3d-scene"></div>
-                <h2 data-i18n="promo.title">Buy a pair, get 5% off</h2>
+                <h2 data-i18n="promo.title">Get a pair, save 5%</h2>
                 <p data-i18n="promo.description">Because your bike has two wheels! Order a matching pair of wheel covers and save 5% on your purchase. Whether you need two of the same size or different sizes for your front and back wheels, the discount applies to any combination. Double the protection, double the style!</p>
             </div>
         </div>
@@ -203,7 +203,7 @@
     <div id="error-modal" class="error-modal" style="display: none;">
         <div class="error-modal-content">
             <h3 data-i18n="errorModal.title">Oops! Something went wrong 😅</h3>
-            <p data-i18n="errorModal.message1">We're really sorry, but something went wrong while processing your order. There's a high chance it's the fault of the developer who worked on this website.</p>
+            <p data-i18n="errorModal.message1">We're really sorry, but something went wrong while processing your order. There's a high chance it's the fault of the developer who worked on this website (probably me!).</p>
             <p data-i18n="errorModal.message2">Don't worry though! You can still contact Germain directly by email:</p>
             <p><strong data-i18n="errorModal.email">toastebikepolo@pronton.me</strong></p>
             <div class="error-modal-actions">

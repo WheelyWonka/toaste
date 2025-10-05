@@ -51,7 +51,7 @@
   "review": {
     "title": "On vérifie ta commande",
     "contactInfo": "Tes Infos",
-    "orderDetails": "Ce que tu commandes",
+    "orderDetails": "Ta commande",
     "total": "Total\u00A0: $",
     "back": "← Retour aux infos",
     "submit": "C'est parti\u00A0!\u00A0→"

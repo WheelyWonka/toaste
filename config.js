@@ -6,9 +6,9 @@ function getApiBaseUrl() {
     const hostname = window.location.hostname;
     
     if (hostname.includes('toastebikepolo.com')) {
-        return 'https://api.toastebikepolo.com/api';
+        return 'https://toastebikepolo.netlify.app/.netlify/functions';
     } else if (hostname.includes('toastebikepolo.ca')) {
-        return 'https://api.toastebikepolo.ca/api';
+        return 'https://toastebikepolo.netlify.app/.netlify/functions';
     } else {
         // Development/local fallback
         return 'http://localhost:3001/api';

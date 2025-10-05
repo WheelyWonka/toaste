@@ -56,18 +56,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             moveEye(eyeRight, containerRight, event.clientX, event.clientY);
         }
 
-        // Add mouse move event listener
+        // Add mouse move event listener for desktop
         document.addEventListener('mousemove', moveEyes);
 
-        // Add touch support for mobile
-        document.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            moveEyes({
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-        }, { passive: false });
+        // Add touch support for mobile (only on logo area)
+        const logoContainer = document.querySelector('.logo-container');
+        if (logoContainer) {
+            logoContainer.addEventListener('touchmove', (e) => {
+                // Only prevent default if touching the logo area
+                const touch = e.touches[0];
+                moveEyes({
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+            }, { passive: true });
+        }
 
     } catch (error) {
         console.error('Error loading SVG:', error);

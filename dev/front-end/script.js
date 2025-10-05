@@ -65,6 +65,12 @@ function initThreeJS() {
     controls.enableZoom = false;  // Disable zoom
     controls.minPolarAngle = Math.PI / 4;
     controls.maxPolarAngle = Math.PI * 3/4;
+    
+    // Configure touch controls for mobile
+    controls.touches = {
+        ONE: THREE.TOUCH.ROTATE,
+        TWO: THREE.TOUCH.DOLLY_PAN
+    };
 
     // Load model
     const loader = new THREE.GLTFLoader();

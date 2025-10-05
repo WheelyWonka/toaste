@@ -958,6 +958,10 @@ input:hover, select:hover, textarea:hover {
     box-shadow: 3px 3px 0 var(--text-color);
     /* Hide number input spinner arrows */
     -moz-appearance: textfield;
+    /* Disable interaction */
+    pointer-events: none;
+    user-select: none;
+    cursor: default;
 }
 
 #quantity::-webkit-outer-spin-button,
@@ -1141,7 +1145,12 @@ input:hover, select:hover, textarea:hover {
     }
     
     .quantity-selector {
-        max-width: 140px;
+        max-width: none;
+    }
+    
+    #quantity {
+        font-size: 1.4rem;
+        min-width: 60px;
     }
     
     

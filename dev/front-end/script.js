@@ -44,7 +44,8 @@ let currentProduct = {
 // LocalStorage keys
 const STORAGE_KEYS = {
     CART: 'toaste_cart',
-    CONTACT_INFO: 'toaste_contact_info'
+    CONTACT_INFO: 'toaste_contact_info',
+    CURRENT_PRODUCT: 'toaste_current_product'
 };
 
 // Load cart from localStorage on page load
@@ -54,6 +55,28 @@ function loadCartFromStorage() {
         if (savedCart) {
             selectedProducts = JSON.parse(savedCart);
             updateCartDisplay();
+        }
+        
+        // Load current product state
+        const savedCurrentProduct = localStorage.getItem(STORAGE_KEYS.CURRENT_PRODUCT);
+        if (savedCurrentProduct) {
+            const productData = JSON.parse(savedCurrentProduct);
+            currentProduct = { ...currentProduct, ...productData };
+            
+            // Update form display
+            if (currentProduct.spokeCount) {
+                const spokeBtn = document.querySelector(`[data-value="${currentProduct.spokeCount}"]`);
+                if (spokeBtn) {
+                    handleOptionClick(spokeCountGroup, spokeCountInput, currentProduct.spokeCount);
+                }
+            }
+            if (currentProduct.wheelSize) {
+                const wheelBtn = document.querySelector(`[data-value="${currentProduct.wheelSize}"]`);
+                if (wheelBtn) {
+                    handleOptionClick(wheelSizeGroup, wheelSizeInput, currentProduct.wheelSize);
+                }
+            }
+            quantityInput.value = currentProduct.quantity;
         }
     } catch (error) {
         console.error('Error loading cart from storage:', error);
@@ -66,6 +89,15 @@ function saveCartToStorage() {
         localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(selectedProducts));
     } catch (error) {
         console.error('Error saving cart to storage:', error);
+    }
+}
+
+// Save current product state to localStorage
+function saveCurrentProductToStorage() {
+    try {
+        localStorage.setItem(STORAGE_KEYS.CURRENT_PRODUCT, JSON.stringify(currentProduct));
+    } catch (error) {
+        console.error('Error saving current product to storage:', error);
     }
 }
 
@@ -205,6 +237,9 @@ function addToCart() {
         quantity: 1
     };
     
+    // Clear current product from localStorage
+    localStorage.removeItem(STORAGE_KEYS.CURRENT_PRODUCT);
+    
     // Reset form
     resetProductForm();
     updateCartDisplay();
@@ -274,13 +309,15 @@ function initThreeJS() {
     controls.dampingFactor = 0.05;
     controls.screenSpacePanning = false;
     controls.enableZoom = false;  // Disable zoom
+    controls.enableDolly = false; // Disable dolly (zoom with mouse wheel)
+    controls.enablePan = false;   // Disable pan
     controls.minPolarAngle = Math.PI / 4;
     controls.maxPolarAngle = Math.PI * 3/4;
     
-    // Configure touch controls for mobile
+    // Configure touch controls for mobile - only rotation
     controls.touches = {
         ONE: THREE.TOUCH.ROTATE,
-        TWO: THREE.TOUCH.DOLLY_PAN
+        TWO: THREE.TOUCH.ROTATE  // Changed from DOLLY_PAN to ROTATE
     };
 
     // Load model
@@ -540,6 +577,9 @@ function handleOptionClick(group, input, value) {
         currentProduct.wheelSize = value;
     }
     
+    // Save current product state
+    saveCurrentProductToStorage();
+    
     // Enable add to cart button if both options are selected
     addToCartBtn.disabled = !(currentProduct.spokeCount && currentProduct.wheelSize);
 }
@@ -563,6 +603,7 @@ quantityMinusBtn.addEventListener('click', () => {
     if (currentProduct.quantity > 1) {
         currentProduct.quantity--;
         quantityInput.value = currentProduct.quantity;
+        saveCurrentProductToStorage();
     }
 });
 
@@ -570,6 +611,7 @@ quantityPlusBtn.addEventListener('click', () => {
     if (currentProduct.quantity < 10) {
         currentProduct.quantity++;
         quantityInput.value = currentProduct.quantity;
+        saveCurrentProductToStorage();
     }
 });
 

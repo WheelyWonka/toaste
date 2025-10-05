@@ -823,14 +823,14 @@ input:hover, select:hover, textarea:hover {
 
 .cart-item {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
     padding: 1rem;
     margin-bottom: 0.5rem;
     background: white;
     border: 3px solid var(--text-color);
     box-shadow: 3px 3px 0 var(--text-color);
     transform: rotate(0.5deg);
+    position: relative;
 }
 
 .cart-item:nth-child(even) {
@@ -864,7 +864,28 @@ input:hover, select:hover, textarea:hover {
     font-size: 1.1rem;
 }
 
+.discount-badge {
+    position: absolute;
+    bottom: 5px;
+    right: -8px;
+    background: var(--accent-color);
+    color: var(--text-color);
+    border: 2px solid var(--text-color);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    font-family: 'TAYMilkbar', serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 2px 2px 0 var(--text-color);
+    transform: rotate(-2deg);
+    z-index: 10;
+}
+
 .remove-item-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
     background: #ff4444;
     color: white;
     border: 3px solid var(--text-color);
@@ -873,10 +894,10 @@ input:hover, select:hover, textarea:hover {
     font-size: 18px;
     font-weight: bold;
     cursor: pointer;
-    margin-left: 1rem;
     transition: all 0.2s ease;
     box-shadow: 2px 2px 0 var(--text-color);
     transform: rotate(-2deg);
+    z-index: 10;
 }
 
 .remove-item-btn:hover {
@@ -1170,7 +1191,6 @@ input:hover, select:hover, textarea:hover {
     
     .remove-item-btn {
         transform: rotate(0deg);
-        align-self: flex-end;
     }
 }
 

@@ -193,6 +193,10 @@ function updateCartDisplay() {
     selectedProducts.forEach((product, index) => {
         const cartItem = document.createElement('div');
         cartItem.className = 'cart-item';
+        
+        // Add discount badge only if this specific item has quantity > 1
+        const discountBadge = product.quantity > 1 ? '<span class="discount-badge">5% OFF</span>' : '';
+        
         cartItem.innerHTML = `
             <div class="cart-item-info">
                 <div class="cart-item-quantity">${product.quantity}x</div>
@@ -200,6 +204,7 @@ function updateCartDisplay() {
             </div>
             <div class="cart-item-price">CAD$${calculateProductPrice(product).toFixed(2)}</div>
             <button type="button" class="remove-item-btn" onclick="removeFromCart(${index})">×</button>
+            ${discountBadge}
         `;
         cartItems.appendChild(cartItem);
     });
@@ -790,7 +795,7 @@ document.querySelector('#order-review .submit-btn').addEventListener('click', as
         shippingAddress: document.getElementById('address').value,
         notes: document.getElementById('notes').value
     };
-    
+
     try {
         // Show loading state
         const submitBtn = document.querySelector('#order-review .submit-btn');

@@ -40,8 +40,18 @@ function calculatePricing(quantity) {
 
 // Handle CORS preflight
 function handleCORS(event) {
+  // Get the origin from the request
+  const origin = event.headers.origin || event.headers.Origin;
+  const allowedOrigins = [
+    'https://toastebikepolo.com',
+    'https://toastebikepolo.ca', 
+    'https://preprod.toastebikepolo.ca'
+  ];
+  
+  const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+  
   const headers = {
-    'Access-Control-Allow-Origin': 'https://toastebikepolo.com, https://toastebikepolo.ca, https://preprod.toastebikepolo.ca',
+    'Access-Control-Allow-Origin': corsOrigin,
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Max-Age': '86400'
@@ -61,10 +71,20 @@ function handleCORS(event) {
 exports.handler = async (event, context) => {
   // Handle CORS preflight first (before any other processing)
   if (event.httpMethod === 'OPTIONS') {
+    // Get the origin from the request
+    const origin = event.headers.origin || event.headers.Origin;
+    const allowedOrigins = [
+      'https://toastebikepolo.com',
+      'https://toastebikepolo.ca', 
+      'https://preprod.toastebikepolo.ca'
+    ];
+    
+    const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+    
     return {
       statusCode: 200,
       headers: {
-        'Access-Control-Allow-Origin': 'https://toastebikepolo.com, https://toastebikepolo.ca, https://preprod.toastebikepolo.ca',
+        'Access-Control-Allow-Origin': corsOrigin,
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Max-Age': '86400'

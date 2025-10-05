@@ -5,9 +5,7 @@
 function getApiBaseUrl() {
     const hostname = window.location.hostname;
     
-    if (hostname.includes('toastebikepolo.com')) {
-        return 'https://toastebikepolo.netlify.app/.netlify/functions';
-    } else if (hostname.includes('toastebikepolo.ca')) {
+    if (hostname.includes('toastebikepolo.com') || hostname.includes('toastebikepolo.ca')) {
         return 'https://toastebikepolo.netlify.app/.netlify/functions';
     } else {
         // Development/local fallback

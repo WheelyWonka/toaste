@@ -872,6 +872,112 @@ document.getElementById('address').addEventListener('input', () => {
     clearFieldError('address');
 });
 
+// Image Carousel functionality
+let currentImageIndex = 0;
+let carouselImages = [];
+
+// Initialize carousel
+function initImageCarousel() {
+    carouselImages = Array.from(document.querySelectorAll('.gallery-image')).map(img => ({
+        src: img.src,
+        alt: img.alt
+    }));
+    
+    // Add click listeners to gallery images
+    document.querySelectorAll('.gallery-image').forEach((img, index) => {
+        img.addEventListener('click', () => openImageCarousel(index));
+    });
+}
+
+// Open carousel with specific image
+function openImageCarousel(index) {
+    currentImageIndex = index;
+    const carousel = document.getElementById('image-carousel');
+    const carouselImage = document.getElementById('carousel-image');
+    
+    carouselImage.src = carouselImages[currentImageIndex].src;
+    carouselImage.alt = carouselImages[currentImageIndex].alt;
+    
+    carousel.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+// Close carousel
+window.closeImageCarousel = function() {
+    const carousel = document.getElementById('image-carousel');
+    carousel.style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Navigate to previous image
+window.previousImage = function() {
+    currentImageIndex = (currentImageIndex - 1 + carouselImages.length) % carouselImages.length;
+    updateCarouselImage();
+}
+
+// Navigate to next image
+window.nextImage = function() {
+    currentImageIndex = (currentImageIndex + 1) % carouselImages.length;
+    updateCarouselImage();
+}
+
+// Update carousel image
+function updateCarouselImage() {
+    const carouselImage = document.getElementById('carousel-image');
+    carouselImage.src = carouselImages[currentImageIndex].src;
+    carouselImage.alt = carouselImages[currentImageIndex].alt;
+}
+
+// Touch/swipe support for mobile
+let touchStartX = 0;
+let touchEndX = 0;
+
+function handleTouchStart(e) {
+    touchStartX = e.changedTouches[0].screenX;
+}
+
+function handleTouchEnd(e) {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+}
+
+function handleSwipe() {
+    const swipeThreshold = 50;
+    const diff = touchStartX - touchEndX;
+    
+    if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+            // Swipe left - next image
+            nextImage();
+        } else {
+            // Swipe right - previous image
+            previousImage();
+        }
+    }
+}
+
+// Add touch event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    initImageCarousel();
+    
+    const carousel = document.getElementById('image-carousel');
+    carousel.addEventListener('touchstart', handleTouchStart, { passive: true });
+    carousel.addEventListener('touchend', handleTouchEnd, { passive: true });
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (document.getElementById('image-carousel').style.display === 'flex') {
+            if (e.key === 'ArrowLeft') {
+                previousImage();
+            } else if (e.key === 'ArrowRight') {
+                nextImage();
+            } else if (e.key === 'Escape') {
+                closeImageCarousel();
+            }
+        }
+    });
+});
+
 // Update review display
 function updateReviewDisplay() {
     // Contact info

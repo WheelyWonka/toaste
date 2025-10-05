@@ -21,7 +21,7 @@
       "label": "Combien ? (5% de réduc' pour une paire)"
     },
     "addToCart": "Ajouter au Panier",
-    "continue": "Tes infos →"
+    "continue": "C'est parti pour tes infos →"
   },
   "cart": {
     "title": "Ton Panier",
@@ -65,8 +65,8 @@
     }
   },
   "features": {
-    "title": "Pourquoi c'est la meilleure wheel cover ?",
-    "description": "Une protection de roue est un équipement essentiel en bike polo, conçu pour empêcher les maillets et les balles de se coincer dans les rayons pendant le jeu. Nos covers premium sont fabriquées avec des matériaux durables et conçues avec précision pour s'adapter à plusieurs tailles de roues. Elles améliorent non seulement la sécurité mais ajoutent aussi un look distinctif à ton équipement de bike polo, te permettant de te concentrer sur ton jeu en toute confiance."
+    "title": "Pourquoi c'est la meilleure protection ?",
+    "description": "Une protection de roue est un équipement essentiel en bike polo, conçu pour empêcher les maillets et les balles de se coincer dans les rayons pendant le jeu. Nos protections premium sont fabriquées avec des matériaux durables et conçues avec précision pour s'adapter à plusieurs tailles de roues. Elles améliorent non seulement la sécurité mais ajoutent aussi un look distinctif à ton équipement de bike polo, te permettant de te concentrer sur ton jeu en toute confiance."
   },
   "package": {
     "title": "Qu'est-ce que tu reçois ?",
@@ -79,7 +79,7 @@
   },
   "promo": {
     "title": "Prends une paire, économise 5%",
-    "description": "Parce que ton vélo a deux roues ! Commande une paire de covers assorties et économise 5% sur ton achat. Que tu aies besoin de deux covers de la même taille ou de tailles différentes pour tes roues avant et arrière, la réduction s'applique à toute combinaison. Double protection, double style !"
+    "description": "Parce que ton vélo a deux roues ! Commande une paire de protections assorties et économise 5% sur ton achat. Que tu aies besoin de deux protections de la même taille ou de tailles différentes pour tes roues avant et arrière, la réduction s'applique à toute combinaison. Double protection, double style !"
   },
   "footer": {
     "copyright": "© 2024 Toasté Bike Polo. Tous droits réservés."

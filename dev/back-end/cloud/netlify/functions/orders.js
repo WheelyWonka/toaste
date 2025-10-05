@@ -81,68 +81,102 @@ exports.handler = async (event, context) => {
       // Create new order
       const body = JSON.parse(event.body);
       const {
-        spokeCount,
-        wheelSize,
+        products, // Array of {spokeCount, wheelSize, quantity}
         customerName,
         customerEmail,
         shippingAddress,
-        notes,
-        quantity = 1
+        notes
       } = body;
 
       // Validate required fields
-      if (!spokeCount || !wheelSize || !customerName || !customerEmail || !shippingAddress) {
+      if (!products || !Array.isArray(products) || products.length === 0 || !customerName || !customerEmail || !shippingAddress) {
         return {
           statusCode: 400,
           headers: corsHeaders,
           body: JSON.stringify({
             error: 'Missing required fields',
-            required: ['spokeCount', 'wheelSize', 'customerName', 'customerEmail', 'shippingAddress']
+            required: ['products', 'customerName', 'customerEmail', 'shippingAddress']
           })
         };
       }
 
-      // Validate spoke count
-      if (!['32', '36'].includes(spokeCount.toString())) {
-        return {
-          statusCode: 400,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            error: 'Invalid spoke count',
-            validValues: ['32', '36']
-          })
-        };
-      }
+      // Validate each product
+      for (let i = 0; i < products.length; i++) {
+        const product = products[i];
+        if (!product.spokeCount || !product.wheelSize || !product.quantity) {
+          return {
+            statusCode: 400,
+            headers: corsHeaders,
+            body: JSON.stringify({
+              error: `Product ${i + 1} is missing required fields`,
+              required: ['spokeCount', 'wheelSize', 'quantity']
+            })
+          };
+        }
 
-      // Validate wheel size
-      if (!['26', '650b', '700'].includes(wheelSize)) {
-        return {
-          statusCode: 400,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            error: 'Invalid wheel size',
-            validValues: ['26', '650b', '700']
-          })
-        };
-      }
+        // Validate spoke count
+        if (!['32', '36'].includes(product.spokeCount.toString())) {
+          return {
+            statusCode: 400,
+            headers: corsHeaders,
+            body: JSON.stringify({
+              error: `Product ${i + 1}: Invalid spoke count`,
+              validValues: ['32', '36']
+            })
+          };
+        }
 
-      // Validate quantity
-      if (quantity < 1 || quantity > 10) {
-        return {
-          statusCode: 400,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            error: 'Invalid quantity',
-            validRange: '1-10'
-          })
-        };
+        // Validate wheel size
+        if (!['26', '650b', '700'].includes(product.wheelSize)) {
+          return {
+            statusCode: 400,
+            headers: corsHeaders,
+            body: JSON.stringify({
+              error: `Product ${i + 1}: Invalid wheel size`,
+              validValues: ['26', '650b', '700']
+            })
+          };
+        }
+
+        // Validate quantity
+        if (product.quantity < 1 || product.quantity > 10) {
+          return {
+            statusCode: 400,
+            headers: corsHeaders,
+            body: JSON.stringify({
+              error: `Product ${i + 1}: Invalid quantity`,
+              validRange: '1-10'
+            })
+          };
+        }
       }
 
       // Generate order code
       const orderCode = generateOrderCode();
       
-      // Calculate pricing
-      const pricing = calculatePricing(quantity);
+      // Calculate total pricing for all products
+      let totalQuantity = 0;
+      let totalSubtotal = 0;
+      const productDetails = [];
+
+      for (const product of products) {
+        const quantity = parseInt(product.quantity);
+        const pricing = calculatePricing(quantity);
+        totalQuantity += quantity;
+        totalSubtotal += pricing.subtotal;
+        productDetails.push({
+          spokeCount: product.spokeCount,
+          wheelSize: product.wheelSize,
+          quantity: quantity,
+          unitPrice: pricing.basePrice,
+          subtotal: pricing.subtotal
+        });
+      }
+
+      // Calculate final tax and total
+      const taxRate = 0.15; // 15% Quebec tax
+      const totalTaxAmount = totalSubtotal * taxRate;
+      const totalPrice = totalSubtotal + totalTaxAmount;
 
       // Create order record
       const orderRecord = {
@@ -153,8 +187,8 @@ exports.handler = async (event, context) => {
         'Notes': notes || '',
         'Order Date': new Date().toISOString().split('T')[0],
         'Status': 'waiting_for_payment',
-        'Total Price CAD': pricing.totalPrice,
-        'Tax Amount CAD': pricing.taxAmount
+        'Total Price CAD': totalPrice,
+        'Tax Amount CAD': totalTaxAmount
       };
 
       // Create order in Airtable
@@ -165,22 +199,32 @@ exports.handler = async (event, context) => {
         });
       });
 
-      // Create order item record
-      const orderItemRecord = {
-        'Order': [orderResult.id],
-        'Spoke Count': parseInt(spokeCount),
-        'Wheel Size': wheelSize,
-        'Quantity': quantity,
-        'Unit Price CAD': pricing.basePrice
-      };
+      // Create order items in Airtable
+      const orderItems = [];
+      for (const product of productDetails) {
+        const orderItemRecord = {
+          'Order': [orderResult.id],
+          'Spoke Count': parseInt(product.spokeCount),
+          'Wheel Size': product.wheelSize,
+          'Quantity': product.quantity,
+          'Unit Price CAD': product.unitPrice
+        };
 
-      // Create order item in Airtable
-      const orderItemResult = await new Promise((resolve, reject) => {
-        getAirtableBase()('Order Items').create(orderItemRecord, (err, record) => {
-          if (err) reject(err);
-          else resolve(record);
+        const orderItemResult = await new Promise((resolve, reject) => {
+          getAirtableBase()('Order Items').create(orderItemRecord, (err, record) => {
+            if (err) reject(err);
+            else resolve(record);
+          });
         });
-      });
+
+        orderItems.push({
+          spokeCount: product.spokeCount,
+          wheelSize: product.wheelSize,
+          quantity: product.quantity,
+          unitPrice: product.unitPrice,
+          subtotal: product.subtotal
+        });
+      }
 
       // Return success response
       return {
@@ -193,22 +237,16 @@ exports.handler = async (event, context) => {
             orderCode: orderCode,
             customerName: customerName,
             customerEmail: customerEmail,
-            totalPrice: pricing.totalPrice,
-            taxAmount: pricing.taxAmount,
+            totalPrice: totalPrice,
+            taxAmount: totalTaxAmount,
             status: 'waiting_for_payment',
             orderDate: new Date().toISOString().split('T')[0],
-            item: {
-              spokeCount: parseInt(spokeCount),
-              wheelSize: wheelSize,
-              quantity: quantity,
-              unitPrice: pricing.basePrice
-            },
-            pricing: {
-              basePrice: pricing.basePrice,
-              subtotal: pricing.subtotal,
-              taxAmount: pricing.taxAmount,
-              totalPrice: pricing.totalPrice,
-              discountApplied: pricing.discountApplied
+            items: orderItems,
+            summary: {
+              totalQuantity: totalQuantity,
+              subtotal: totalSubtotal,
+              taxAmount: totalTaxAmount,
+              totalPrice: totalPrice
             }
           }
         })

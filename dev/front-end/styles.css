@@ -38,7 +38,7 @@ body {
     color: var(--text-color);
     font-family: 'FKRasterGrotesk', sans-serif;
     font-weight: normal;
-    line-height: 1.6;
+    line-height: 1;
     padding: 2rem;
     max-width: 1200px;
     margin: 0 auto;
@@ -1595,6 +1595,20 @@ input:hover, select:hover, textarea:hover {
     padding: 0 1rem;
     max-width: 600px;
     margin: 0 auto;
+}
+
+.thank-you-message {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.thank-you-message p {
+    font-size: 1.2rem;
+    font-weight: normal;
+    color: var(--text-color);
+    font-family: 'FKRasterGrotesk', sans-serif;
+    margin: 0;
+    line-height: 1.5;
 }
 
 .highlight {

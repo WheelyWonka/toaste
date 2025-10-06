@@ -58,6 +58,7 @@
   },
   "confirmation": {
     "title": "You're all set!",
+    "thankYou": "Thanks for choosing Toasté!",
     "orderCode": "Your order code:",
     "payment": {
       "instruction": "Send your payment to:",

@@ -1173,6 +1173,23 @@ document.getElementById('address').addEventListener('input', saveContactInfoToSt
 document.getElementById('notes').addEventListener('input', saveContactInfoToStorage);
 
 
+// DEBUG: Function to show step 4 without API call
+window.showConfirmationDebug = function() {
+    // Generate a mock order code
+    const mockOrderCode = generateOrderCode();
+    
+    // Show confirmation section
+    reviewSection.style.display = 'none';
+    confirmationSection.style.display = 'block';
+    orderCodeSpan.textContent = mockOrderCode;
+    
+    // Scroll to title of confirmation section
+    const confirmationTitle = confirmationSection.querySelector('.section-header');
+    confirmationTitle.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    console.log('DEBUG: Showing confirmation page with mock order code:', mockOrderCode);
+};
+
 // Initialize: Load saved data from localStorage when page loads
 document.addEventListener('DOMContentLoaded', () => {
     loadCartFromStorage();

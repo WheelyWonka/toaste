@@ -91,5 +91,9 @@
     "message2": "T'inquiète pas\u00A0! Tu peux toujours contacter Germain directement par email\u00A0:",
     "email": "toastebikepolo@pronton.me",
     "tryAgain": "Réessayer\u00A0?"
+  },
+  "instagram": {
+    "title": "Suis-nous sur le Gram'",
+    "handle": "@toastebikepolo"
   }
 } 

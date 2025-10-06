@@ -91,5 +91,9 @@
     "message2": "Don't worry though! You can still contact Germain directly by email:",
     "email": "toastebikepolo@pronton.me",
     "tryAgain": "Try again?"
+  },
+  "instagram": {
+    "title": "Follow us on the Gram'",
+    "handle": "@toastebikepolo"
   }
 } 

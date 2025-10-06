@@ -1124,6 +1124,7 @@ document.getElementById('email').addEventListener('input', saveContactInfoToStor
 document.getElementById('address').addEventListener('input', saveContactInfoToStorage);
 document.getElementById('notes').addEventListener('input', saveContactInfoToStorage);
 
+
 // Initialize: Load saved data from localStorage when page loads
 document.addEventListener('DOMContentLoaded', () => {
     loadCartFromStorage();

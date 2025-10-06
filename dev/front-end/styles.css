@@ -450,7 +450,6 @@ input:hover, select:hover, textarea:hover {
 
 .forms-container {
     width: 50%;
-    max-width: 600px;
     flex-shrink: 0;
 }
 
@@ -1587,7 +1586,8 @@ input:hover, select:hover, textarea:hover {
     .mobile-cursor-hint {
         display: block;
     }
-    
+}
+
 /* Confirmation section - consistent layout for desktop and mobile */
 .confirmation-content {
     font-size: 1.1rem;

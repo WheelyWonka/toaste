@@ -178,6 +178,12 @@ exports.handler = async (event, context) => {
       const totalTaxAmount = totalSubtotal * taxRate;
       const totalPrice = totalSubtotal + totalTaxAmount;
 
+      // Generate product summary for easy reading in Airtable
+      const productSummaryLines = productDetails.map(product => 
+        `• ${product.quantity}x Wheel Cover (${product.spokeCount} spokes, ${product.wheelSize}")`
+      );
+      const productSummary = productSummaryLines.join('\n') + `\n\nTOTAL: ${totalQuantity} covers`;
+
       // Create order record
       const orderRecord = {
         'Order Code': orderCode,
@@ -188,7 +194,8 @@ exports.handler = async (event, context) => {
         'Order Date': new Date().toISOString().split('T')[0],
         'Status': 'waiting_for_payment',
         'Total Price CAD': totalPrice,
-        'Tax Amount CAD': totalTaxAmount
+        'Tax Amount CAD': totalTaxAmount,
+        'Product Summary': productSummary
       };
 
       // Create order in Airtable

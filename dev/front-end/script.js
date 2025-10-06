@@ -342,6 +342,24 @@ function initThreeJS() {
     renderer.setSize(container.clientWidth, container.clientWidth);
     container.appendChild(renderer.domElement);
 
+    // Function to handle speed boost
+    function boostSpeed() {
+        // Increase speed multiplier with each click (up to max) - MUCH more dramatic!
+        speedMultiplier += 2.0; // Increased from 0.5 to 2.0
+        if (speedMultiplier > maxSpeedMultiplier) {
+            speedMultiplier = maxSpeedMultiplier;
+        }
+    }
+
+    // Add click event listener for speed boost (desktop)
+    renderer.domElement.addEventListener('click', boostSpeed);
+    
+    // Add touch event listener for speed boost (mobile/touch screens)
+    renderer.domElement.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // Prevent default touch behavior
+        boostSpeed();
+    });
+
     // No lights - flat cell-shading effect
 
     // Add controls with restricted movement
@@ -411,12 +429,26 @@ function onWindowResize() {
     renderer.setSize(size, size);
 }
 
+// Model rotation variables
+let baseRotationSpeed = 0.005;
+let speedMultiplier = 1; // Stackable speed multiplier
+let maxSpeedMultiplier = 25; // Maximum speed multiplier (much higher!)
+
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
     
     if (model) {
-        model.rotation.y += 0.005;
+        // Apply rotation speed with multiplier
+        model.rotation.y += baseRotationSpeed * speedMultiplier;
+        
+        // Gradually reduce speed multiplier over time when not clicking
+        if (speedMultiplier > 1) {
+            speedMultiplier -= 0.05; // Much faster decay for quicker slowdown
+            if (speedMultiplier < 1) {
+                speedMultiplier = 1;
+            }
+        }
     }
     
     renderer.render(scene, camera);

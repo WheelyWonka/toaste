@@ -61,7 +61,7 @@
     "orderCode": "Your order code:",
     "payment": {
       "instruction": "Send your payment to:",
-      "email": "payment@toastebikepolo.com",
+      "email": "toastebikepolo@proton.me",
       "methods": "Canadians can use Interac, others can use PayPal.",
       "note": "⚠️ Don't forget to include your order code in the payment details"
     },
@@ -92,7 +92,7 @@
     "title": "Oops! Something went wrong 😅",
     "message1": "We're really sorry, but something went wrong while processing your order. There's a high chance it's the fault of the developer who worked on this website.",
     "message2": "Don't worry though! You can still contact Germain directly by email:",
-    "email": "toastebikepolo@pronton.me",
+    "email": "toastebikepolo@proton.me",
     "tryAgain": "Try again?"
   },
   "instagram": {

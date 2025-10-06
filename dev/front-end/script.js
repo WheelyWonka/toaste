@@ -342,13 +342,7 @@ function initThreeJS() {
     renderer.setSize(container.clientWidth, container.clientWidth);
     container.appendChild(renderer.domElement);
 
-    // Add lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(ambientLight);
-    
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(1, 1, 2);
-    scene.add(directionalLight);
+    // No lights - flat cell-shading effect
 
     // Add controls with restricted movement
     controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -373,6 +367,28 @@ function initThreeJS() {
         model = gltf.scene;
         model.rotation.x = -Math.PI / 2;
         model.scale.set(0.27, 0.27, 0.27);  // Further reduced scale for better size
+        
+        // Create materials for true cell-shading effect (no lighting)
+        const cellShadingMaterial = new THREE.MeshBasicMaterial({
+            color: 0x000000  // Pure black, no lighting effects
+        });
+        
+        const yellowCoverMaterial = new THREE.MeshBasicMaterial({
+            color: 0xefca52  // Pure yellow, no lighting effects
+        });
+        
+        // Apply materials based on original color brightness
+        model.traverse((child) => {
+            if (child.isMesh) {
+                // Check the original material color to determine if it should be black (cell-shading) or yellow (cover)
+                const originalColor = child.material.color;
+                const brightness = originalColor.r + originalColor.g + originalColor.b;
+                
+                // If the original color is very dark (black), make it black (cell-shading)
+                // Otherwise, make it yellow (cover matching background)
+                child.material = brightness < 0.1 ? cellShadingMaterial : yellowCoverMaterial;
+            }
+        });
         
         const box = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());

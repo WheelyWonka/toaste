@@ -1,8 +1,8 @@
 {
   "meta": {
-    "description": "Toasté Bike Polo - Protection de roue premium pour joueurs de Bike Polo. Disponible en plusieurs tailles et configurations de rayons.",
-    "keywords": "bike polo, protection de roue, équipement bike polo, protection 26 pouces, protection 650b, protection 700c",
-    "title": "Toasté Bike Polo - Protection de Roue Premium"
+    "description": "Toasté Bike Polo - Cover premium pour joueurs de Bike Polo. Disponible en plusieurs tailles et configurations de rayons.",
+    "keywords": "bike polo, cover, équipement bike polo, cover 26 pouces, cover 650b, cover 700c",
+    "title": "Toasté Bike Polo - Cover Premium"
   },
   "productConfig": {
     "title": "Qu'est-ce que tu veux poto\u00A0?",
@@ -69,13 +69,13 @@
     "emailNote": "On t'a envoyé un email avec toutes ces infos de toute façon. On sait que tu ne lis pas les messages importants sur internet, c'est ok tu es humain."
   },
   "features": {
-    "title": "Pourquoi c'est la meilleure protection\u00A0?",
-    "description": "Une protection de roue est un équipement essentiel en bike polo, conçu pour empêcher les maillets et les balles de se coincer dans les rayons pendant le jeu. Nos protections premium sont fabriquées avec des matériaux durables et conçues avec précision pour s'adapter à plusieurs tailles de roues. Elles améliorent non seulement la sécurité mais ajoutent aussi un look distinctif à ton équipement de bike polo, te permettant de te concentrer sur ton jeu en toute confiance."
+    "title": "Pourquoi c'est la meilleure cover\u00A0?",
+    "description": "Une cover est un équipement essentiel en bike polo, conçue pour empêcher les maillets et les balles de se coincer dans les rayons pendant le jeu. Nos covers premium sont fabriquées avec des matériaux durables et conçues avec précision pour s'adapter à plusieurs tailles de roues. Elles améliorent non seulement la sécurité mais ajoutent aussi un look distinctif à ton équipement de bike polo, te permettant de te concentrer sur ton jeu en toute confiance."
   },
   "package": {
     "title": "Qu'est-ce que tu reçois\u00A0?",
     "items": {
-      "cover": "Protection de roue premium dans la taille que tu as choisie (26\u00A0\", 650b, ou 700c)",
+      "cover": "Cover premium dans la taille que tu as choisie (26\u00A0\", 650b, ou 700c)",
       "hardware": "Kit de montage pour ton nombre de rayons (32 ou 36 rayons)",
       "guide": "Guide d'installation détaillé",
       "sticker": "Autocollant Toasté Bike Polo"
@@ -83,7 +83,7 @@
   },
   "promo": {
     "title": "Prends une paire, économise 5\u00A0%",
-    "description": "Parce que ton vélo a deux roues\u00A0! Commande une paire de protections assorties et économise 5\u00A0% sur ton achat. Que tu aies besoin de deux protections de la même taille ou de tailles différentes pour tes roues avant et arrière, la réduction s'applique à toute combinaison. Double protection, double style\u00A0!"
+    "description": "Parce que ton vélo a deux roues\u00A0! Commande une paire de covers assorties et économise 5\u00A0% sur ton achat. Que tu aies besoin de deux covers de la même taille ou de tailles différentes pour tes roues avant et arrière, la réduction s'applique à toute combinaison. Double cover, double style\u00A0!"
   },
   "footer": {
     "madeIn": "Fabriqué à Montréal, Québec, Canada",

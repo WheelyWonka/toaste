@@ -61,8 +61,11 @@
     "orderCode": "Your order code:",
     "payment": {
       "instruction": "Send your payment to:",
+      "email": "payment@toastebikepolo.com",
+      "methods": "Canadians can use Interac, others can use PayPal.",
       "note": "⚠️ Don't forget to include your order code in the payment details"
-    }
+    },
+    "emailNote": "We've sent you an email with all that information anyway. We know you don't read important messages on internet, it's ok you are human."
   },
   "features": {
     "title": "Why is it the best cover?",

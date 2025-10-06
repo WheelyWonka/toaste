@@ -61,8 +61,11 @@
     "orderCode": "Ton code de commande\u00A0:",
     "payment": {
       "instruction": "Envoie ton paiement à\u00A0:",
+      "email": "payment@toastebikepolo.com",
+      "methods": "Les Canadiens peuvent utiliser Interac, les autres peuvent utiliser PayPal.",
       "note": "⚠️ N'oublie pas d'inclure ton code de commande dans les détails du paiement"
-    }
+    },
+    "emailNote": "On t'a envoyé un email avec toutes ces infos de toute façon. On sait que tu ne lis pas les messages importants sur internet, c'est ok tu es humain."
   },
   "features": {
     "title": "Pourquoi c'est la meilleure protection\u00A0?",

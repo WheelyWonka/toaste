@@ -1638,12 +1638,13 @@ input:hover, select:hover, textarea:hover {
     font-weight: bold;
     color: var(--text-color);
     background: var(--accent-color);
-    padding: 0.25rem 0.5rem;
-    border: 2px solid var(--text-color);
-    box-shadow: 2px 2px 0 var(--text-color);
+    padding: 0.5rem 1rem;
+    border: 3px solid var(--text-color);
+    box-shadow: 4px 4px 0 var(--text-color);
     display: inline-block;
-    transform: rotate(1deg);
-    font-size: 1.1rem;
+    transform: rotate(-1deg);
+    font-size: 1.2rem;
+    font-family: 'FKRasterGrotesk', sans-serif;
 }
 
 .payment-methods {

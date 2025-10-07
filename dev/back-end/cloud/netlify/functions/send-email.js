@@ -119,7 +119,7 @@ exports.handler = async (event, context) => {
                         
                         <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
                             <h3 style="margin-top: 0;">Order Code: ${orderData.orderCode}</h3>
-                            <p><strong>Total: CAD$${orderData.total.toFixed(2)}</strong></p>
+                            <p style="margin-bottom:0;"><strong>Total: CAD$${orderData.total.toFixed(2)}</strong></p>
                         </div>
                         
                         <h3>Your Items:</h3>
@@ -133,7 +133,7 @@ exports.handler = async (event, context) => {
                             <h3 style="margin-top: 0;">Payment Instructions</h3>
                             <p><strong>Send payment to: toastebikepolo@proton.me</strong></p>
                             <p>Canadians can use Interac, others can use PayPal.</p>
-                            <p><strong>⚠️ Don't forget to include your order code in the payment details!</strong></p>
+                            <p><strong>🚨 Don't forget to include your order code in the payment details!</strong></p>
                         </div>
                         
                         <p>We'll process your order as soon as we receive your payment.</p>

@@ -1,4 +1,45 @@
+// Using Proton Mail SMTP with improved serverless compatibility
+
 const nodemailer = require('nodemailer');
+
+// Function to send email via Proton Mail SMTP
+async function sendEmailViaProtonAPI(emailContent) {
+    console.log('Sending email via Proton Mail SMTP...');
+    
+    // Create transporter with optimized settings for serverless
+    const transporter = nodemailer.createTransport({
+        host: 'mail.proton.me',
+        port: 587,
+        secure: false,
+        auth: {
+            user: process.env.PROTON_EMAIL,
+            pass: process.env.PROTON_APP_PASSWORD
+        },
+        tls: {
+            rejectUnauthorized: false,
+            minVersion: 'TLSv1.2'
+        },
+        connectionTimeout: 20000, // 20 seconds
+        greetingTimeout: 10000,   // 10 seconds
+        socketTimeout: 20000,     // 20 seconds
+        pool: false,              // Disable connection pooling
+        maxConnections: 1,
+        maxMessages: 1
+    });
+
+    try {
+        // Send email
+        const result = await transporter.sendMail(emailContent);
+        console.log('Proton Mail SMTP response:', result);
+        return { messageId: result.messageId };
+    } catch (error) {
+        console.error('Proton Mail SMTP error:', error);
+        throw error;
+    } finally {
+        // Close the transporter
+        transporter.close();
+    }
+}
 
 exports.handler = async (event, context) => {
     console.log('=== EMAIL FUNCTION CALLED ===');
@@ -59,28 +100,8 @@ exports.handler = async (event, context) => {
         console.log('PROTON_APP_PASSWORD exists:', !!process.env.PROTON_APP_PASSWORD);
         console.log('PROTON_APP_PASSWORD length:', process.env.PROTON_APP_PASSWORD ? process.env.PROTON_APP_PASSWORD.length : 0);
 
-        // Create transporter using Proton Mail SMTP
-        console.log('Creating Proton Mail transporter...');
-        const transporter = nodemailer.createTransport({
-            host: 'mail.proton.me',
-            port: 465,
-            secure: true, // Use SSL for port 465
-            auth: {
-                user: process.env.PROTON_EMAIL,
-                pass: process.env.PROTON_APP_PASSWORD
-            },
-            tls: {
-                rejectUnauthorized: false
-            },
-            connectionTimeout: 30000, // 30 seconds
-            greetingTimeout: 15000,   // 15 seconds
-            socketTimeout: 30000      // 30 seconds
-        });
-
-        // Verify transporter configuration
-        console.log('Verifying transporter configuration...');
-        await transporter.verify();
-        console.log('✅ Transporter verification successful');
+        // Using Proton Mail SMTP
+        console.log('Using Proton Mail SMTP for sending emails...');
 
         let emailContent;
         let subject;
@@ -167,7 +188,7 @@ exports.handler = async (event, context) => {
             throw new Error('Invalid email type');
         }
 
-        console.log('=== SENDING EMAIL ===');
+        console.log('=== SENDING EMAIL VIA PROTON SMTP ===');
         console.log('Email content prepared:', {
             from: emailContent.from,
             to: emailContent.to,
@@ -175,15 +196,13 @@ exports.handler = async (event, context) => {
             htmlLength: emailContent.html ? emailContent.html.length : 0
         });
 
-        // Send email
-        const result = await transporter.sendMail(emailContent);
+        // Send email using Proton Mail SMTP
+        const result = await sendEmailViaProtonAPI(emailContent);
         
-        console.log('✅ Email sent successfully:', {
+        console.log('✅ Email sent successfully via Proton SMTP:', {
             messageId: result.messageId,
             emailType,
-            to: emailContent.to,
-            accepted: result.accepted,
-            rejected: result.rejected
+            to: emailContent.to
         });
 
         return {
@@ -191,7 +210,7 @@ exports.handler = async (event, context) => {
             headers: corsHeaders,
             body: JSON.stringify({ 
                 success: true, 
-                message: 'Email sent successfully',
+                message: 'Email sent successfully via Proton SMTP',
                 messageId: result.messageId
             })
         };

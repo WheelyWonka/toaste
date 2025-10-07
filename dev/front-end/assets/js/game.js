@@ -500,7 +500,7 @@ class ToasterGame {
                 
                 this.toasts.push({
                     x: this.toaster.x + this.toaster.width / 2 - 12, // Center the toast
-                    y: this.toaster.y,
+                    y: this.toaster.y - 18,
                     width: 24,
                     height: 24,
                     vx: this.shootDirection.x * this.toastSpeed,

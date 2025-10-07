@@ -441,6 +441,11 @@ input:hover, select:hover, textarea:hover {
     aspect-ratio: 1;
     background: transparent;
     position: relative;
+    cursor: grab;
+}
+
+#model-container:active {
+    cursor: grabbing;
 }
 
 #model-container canvas {

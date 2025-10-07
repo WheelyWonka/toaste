@@ -20,18 +20,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         const containerRight = document.querySelector('#eye-container-right');
         const svg = document.querySelector('svg');
 
+        // Cache SVG bounds to avoid repeated calculations
+        let svgRect = null;
+        let svgScale = null;
+        
+        function updateSVGBounds() {
+            svgRect = svg.getBoundingClientRect();
+            svgScale = svgRect.width / svg.viewBox.baseVal.width;
+        }
+        
         function getContainerBounds(container) {
+            if (!svgRect || !svgScale) {
+                updateSVGBounds();
+            }
+            
             const bounds = container.getBBox();
-            const svgRect = svg.getBoundingClientRect();
-            const scale = svgRect.width / svg.viewBox.baseVal.width;
             
             return {
-                left: svgRect.left + (bounds.x * scale),
-                top: svgRect.top + (bounds.y * scale),
-                width: bounds.width * scale,
-                height: bounds.height * scale,
-                centerX: svgRect.left + ((bounds.x + bounds.width / 2) * scale),
-                centerY: svgRect.top + ((bounds.y + bounds.height / 2) * scale)
+                left: svgRect.left + (bounds.x * svgScale),
+                top: svgRect.top + (bounds.y * svgScale),
+                width: bounds.width * svgScale,
+                height: bounds.height * svgScale,
+                centerX: svgRect.left + ((bounds.x + bounds.width / 2) * svgScale),
+                centerY: svgRect.top + ((bounds.y + bounds.height / 2) * svgScale)
             };
         }
 
@@ -55,13 +66,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             const x = Math.cos(angle) * distance;
             const y = Math.sin(angle) * distance;
             
-            // Apply the transform
-            eye.style.transform = `translate(${x}px, ${y}px)`;
+            // Apply the transform with will-change for better performance
+            eye.style.willChange = 'transform';
+            eye.style.transform = `translate3d(${x}px, ${y}px, 0)`;
         }
 
         function moveEyes(event) {
-            moveEye(eyeLeft, containerLeft, event.clientX, event.clientY);
-            moveEye(eyeRight, containerRight, event.clientX, event.clientY);
+            // Update SVG bounds on each move to handle window resizing
+            updateSVGBounds();
+            
+            // Move both eyes in the same frame
+            requestAnimationFrame(() => {
+                moveEye(eyeLeft, containerLeft, event.clientX, event.clientY);
+                moveEye(eyeRight, containerRight, event.clientX, event.clientY);
+            });
         }
 
         // Add mouse move event listener for desktop

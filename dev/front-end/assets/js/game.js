@@ -741,7 +741,7 @@ class GameActivator {
     constructor() {
         this.clickCount = 0;
         this.clickTimeout = null;
-        this.clickWindow = 2000; // 2 seconds window for 10 clicks
+        this.clickWindow = 1000; // 1 second window for consecutive clicks
         this.game = null;
         this.logoAnimating = false; // Flag to prevent multiple logo animations
         
@@ -767,25 +767,27 @@ class GameActivator {
     handleClick(e) {
         e.preventDefault();
         
-        this.clickCount++;
-        console.log(`3D Model clicked! Count: ${this.clickCount}`);
-        
-        // Animate the main logo on each click
-        this.animateMainLogo();
-        
-        // Clear existing timeout
+        // Clear existing timeout first
         if (this.clickTimeout) {
             clearTimeout(this.clickTimeout);
         }
         
+        this.clickCount++;
+        console.log(`3D Model clicked! Count: ${this.clickCount}/10`);
+        
+        // Animate the main logo on each click
+        this.animateMainLogo();
+        
         // If we've reached 10 clicks, activate the game
         if (this.clickCount >= 10) {
+            console.log('🎮 Game activated! 10 consecutive clicks detected!');
             this.activateGame();
             return;
         }
         
-        // Set timeout to reset click count
+        // Set timeout to reset click count if no more clicks come in
         this.clickTimeout = setTimeout(() => {
+            console.log(`⏰ Click timeout! Resetting count from ${this.clickCount} to 0`);
             this.clickCount = 0;
         }, this.clickWindow);
     }

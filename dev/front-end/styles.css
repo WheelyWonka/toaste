@@ -896,12 +896,13 @@ input:hover, select:hover, textarea:hover {
 
 .cart-item-info {
     flex: 1;
+    margin-bottom: 1rem;
 }
 
 .cart-item-quantity {
     font-weight: bold;
     color: var(--text-color);
-    margin-right: 1rem;
+    margin-bottom: 0.5rem;
     font-size: 1.1rem;
 }
 

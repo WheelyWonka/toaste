@@ -13,7 +13,7 @@
     },
     "wheelSize": {
       "label": "Taille de Roue\u00A0:",
-      "26": "26\u00A0\"",
+      "26": "26\"",
       "650b": "650b",
       "700": "700c"
     },
@@ -25,21 +25,28 @@
   },
   "cart": {
     "title": "Ton Panier",
-    "subtotal": "Sous-total\u00A0: $"
+    "subtotal": "Sous-total\u00A0: $",
+    "selectBothOptions": "Sélectionne le nombre de rayons ET la taille de roue",
+    "addAtLeastOneItem": "Ajoute au moins un article à ton panier",
+    "itemFormat": "rayons"
   },
   "contactForm": {
     "title": "On envoie ça où\u00A0?",
     "fullName": {
       "label": "Ton Nom\u00A0:",
-      "placeholder": "Comment tu t'appelles\u00A0?"
+      "placeholder": "Comment tu t'appelles\u00A0?",
+      "required": "Entre ton nom"
     },
     "email": {
       "label": "Ton Email\u00A0:",
-      "placeholder": "Ton adresse email"
+      "placeholder": "Ton adresse email",
+      "required": "Entre ton email",
+      "invalid": "Entre une adresse email valide"
     },
     "address": {
       "label": "Ton adresse\u00A0:",
-      "placeholder": "Ton adresse complète"
+      "placeholder": "Ton adresse complète",
+      "required": "Entre ton adresse"
     },
     "notes": {
       "label": "Autre chose à dire\u00A0:",
@@ -76,7 +83,7 @@
   "package": {
     "title": "Qu'est-ce que tu reçois\u00A0?",
     "items": {
-      "cover": "Cover premium dans la taille que tu as choisie (26\u00A0\", 650b, ou 700c)",
+      "cover": "Cover premium dans la taille que tu as choisie (26\", 650b, ou 700c)",
       "hardware": "Kit de montage pour ton nombre de rayons (32 ou 36 rayons)",
       "guide": "Guide d'installation détaillé",
       "sticker": "Autocollant Toasté Bike Polo"

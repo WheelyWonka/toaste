@@ -181,6 +181,14 @@ const PRICING = {
     taxRate: 0.15 // 15% Quebec taxes
 };
 
+// Format wheel size for display
+function formatWheelSize(wheelSize) {
+    if (wheelSize === '26') {
+        return '26"';
+    }
+    return wheelSize;
+}
+
 // Calculate price for a product
 function calculateProductPrice(product) {
     return PRICING.basePrice * product.quantity;
@@ -240,7 +248,7 @@ function updateCartDisplay() {
         cartItem.innerHTML = `
             <div class="cart-item-info">
                 <div class="cart-item-quantity">${product.quantity}x</div>
-                <div class="cart-item-details">${product.spokeCount} spokes, ${product.wheelSize}</div>
+                <div class="cart-item-details">${product.spokeCount} ${i18n.t('cart.itemFormat')}, ${formatWheelSize(product.wheelSize)}</div>
             </div>
             <div class="cart-item-price">CAD$${calculateProductPrice(product).toFixed(2)}</div>
             <button type="button" class="remove-item-btn" onclick="removeFromCart(${index})">×</button>
@@ -256,7 +264,7 @@ function updateCartDisplay() {
 // Add product to cart
 function addToCart() {
     if (!currentProduct.spokeCount || !currentProduct.wheelSize) {
-        alert('Please select both spoke count and wheel size');
+        alert(i18n.t('cart.selectBothOptions'));
         return;
     }
     
@@ -718,7 +726,7 @@ addToCartBtn.addEventListener('click', addToCart);
 // Cart total button click to continue
 document.getElementById('cart-total-btn').addEventListener('click', () => {
     if (selectedProducts.length === 0) {
-        alert('Please add at least one item to your cart');
+        alert(i18n.t('cart.addAtLeastOneItem'));
         return;
     }
     
@@ -830,7 +838,7 @@ function validateForm() {
     // Validate name
     const name = document.getElementById('name').value;
     if (!validateName(name)) {
-        showFieldError('name', 'Please enter your name');
+        showFieldError('name', i18n.t('contactForm.fullName.required'));
         isValid = false;
     } else {
         clearFieldError('name');
@@ -839,10 +847,10 @@ function validateForm() {
     // Validate email
     const email = document.getElementById('email').value;
     if (!email.trim()) {
-        showFieldError('email', 'Please enter your email');
+        showFieldError('email', i18n.t('contactForm.email.required'));
         isValid = false;
     } else if (!validateEmail(email)) {
-        showFieldError('email', 'Please enter a valid email address');
+        showFieldError('email', i18n.t('contactForm.email.invalid'));
         isValid = false;
     } else {
         clearFieldError('email');
@@ -851,7 +859,7 @@ function validateForm() {
     // Validate address
     const address = document.getElementById('address').value;
     if (!validateAddress(address)) {
-        showFieldError('address', 'Please enter your address');
+        showFieldError('address', i18n.t('contactForm.address.required'));
         isValid = false;
     } else {
         clearFieldError('address');
@@ -883,7 +891,7 @@ customerForm.addEventListener('submit', (e) => {
 document.getElementById('name').addEventListener('blur', () => {
     const name = document.getElementById('name').value;
     if (name && !validateName(name)) {
-        showFieldError('name', 'Please enter your name');
+        showFieldError('name', i18n.t('contactForm.fullName.required'));
     } else {
         clearFieldError('name');
     }
@@ -892,7 +900,7 @@ document.getElementById('name').addEventListener('blur', () => {
 document.getElementById('email').addEventListener('blur', () => {
     const email = document.getElementById('email').value;
     if (email && !validateEmail(email)) {
-        showFieldError('email', 'Please enter a valid email address');
+        showFieldError('email', i18n.t('contactForm.email.invalid'));
     } else {
         clearFieldError('email');
     }
@@ -901,7 +909,7 @@ document.getElementById('email').addEventListener('blur', () => {
 document.getElementById('address').addEventListener('blur', () => {
     const address = document.getElementById('address').value;
     if (address && !validateAddress(address)) {
-        showFieldError('address', 'Please enter your address');
+        showFieldError('address', i18n.t('contactForm.address.required'));
     } else {
         clearFieldError('address');
     }
@@ -1053,7 +1061,7 @@ function updateReviewDisplay() {
         orderItem.className = 'review-order-item';
         orderItem.innerHTML = `
             <div>
-                <strong>${product.quantity}x</strong> ${product.spokeCount} spokes, ${product.wheelSize}
+                <strong>${product.quantity}x</strong> ${product.spokeCount} ${i18n.t('cart.itemFormat')}, ${formatWheelSize(product.wheelSize)}
             </div>
             <div>CAD$${calculateProductPrice(product).toFixed(2)}</div>
         `;

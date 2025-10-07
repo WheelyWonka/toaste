@@ -25,21 +25,28 @@
   },
   "cart": {
     "title": "Your Cart",
-    "subtotal": "Subtotal: $"
+    "subtotal": "Subtotal: $",
+    "selectBothOptions": "Please select both spoke count and wheel size",
+    "addAtLeastOneItem": "Please add at least one item to your cart",
+    "itemFormat": "spokes"
   },
   "contactForm": {
     "title": "Where do we ship that?",
     "fullName": {
       "label": "Your Name:",
-      "placeholder": "What's your name?"
+      "placeholder": "What's your name?",
+      "required": "Please enter your name"
     },
     "email": {
       "label": "Your Email:",
-      "placeholder": "Your email address"
+      "placeholder": "Your email address",
+      "required": "Please enter your email",
+      "invalid": "Please enter a valid email address"
     },
     "address": {
       "label": "Your Address:",
-      "placeholder": "Your complete address"
+      "placeholder": "Your complete address",
+      "required": "Please enter your address"
     },
     "notes": {
       "label": "Anything else:",

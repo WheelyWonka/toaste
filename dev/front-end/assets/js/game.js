@@ -750,7 +750,14 @@ class GameActivator {
     init() {
         const modelContainer = document.getElementById('model-container');
         if (modelContainer) {
+            // Mouse click events
             modelContainer.addEventListener('click', (e) => {
+                this.handleClick(e);
+            });
+            
+            // Touch events for mobile
+            modelContainer.addEventListener('touchstart', (e) => {
+                e.preventDefault();
                 this.handleClick(e);
             });
         }

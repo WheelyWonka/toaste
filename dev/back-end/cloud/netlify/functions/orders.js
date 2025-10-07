@@ -235,6 +235,7 @@ exports.handler = async (event, context) => {
 
       // Send email notifications
       try {
+        console.log('=== PREPARING EMAIL NOTIFICATIONS ===');
         const emailData = {
           orderCode: orderCode,
           customerName: customerName,
@@ -251,9 +252,12 @@ exports.handler = async (event, context) => {
           taxes: totalTaxAmount,
           total: totalPrice
         };
+        
+        console.log('Email data prepared:', JSON.stringify(emailData, null, 2));
 
         // Send customer confirmation email
-        await fetch(`${process.env.URL || 'https://toastebikepolo.netlify.app'}/.netlify/functions/send-email`, {
+        console.log('Sending customer confirmation email...');
+        const customerEmailResponse = await fetch(`${process.env.URL || 'https://toastebikepolo.netlify.app'}/.netlify/functions/send-email`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -263,9 +267,13 @@ exports.handler = async (event, context) => {
             emailType: 'customer'
           })
         });
+        
+        const customerEmailResult = await customerEmailResponse.json();
+        console.log('Customer email response:', customerEmailResult);
 
         // Send owner notification email
-        await fetch(`${process.env.URL || 'https://toastebikepolo.netlify.app'}/.netlify/functions/send-email`, {
+        console.log('Sending owner notification email...');
+        const ownerEmailResponse = await fetch(`${process.env.URL || 'https://toastebikepolo.netlify.app'}/.netlify/functions/send-email`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -275,6 +283,9 @@ exports.handler = async (event, context) => {
             emailType: 'owner'
           })
         });
+        
+        const ownerEmailResult = await ownerEmailResponse.json();
+        console.log('Owner email response:', ownerEmailResult);
       } catch (emailError) {
         console.error('Error sending emails:', emailError);
         // Don't fail the order if email fails

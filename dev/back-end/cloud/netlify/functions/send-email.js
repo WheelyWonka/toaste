@@ -1,6 +1,11 @@
 const nodemailer = require('nodemailer');
 
 exports.handler = async (event, context) => {
+    console.log('=== EMAIL FUNCTION CALLED ===');
+    console.log('HTTP Method:', event.httpMethod);
+    console.log('Headers:', JSON.stringify(event.headers, null, 2));
+    console.log('Body:', event.body);
+    
     // Handle CORS
     const allowedOrigins = [
         'https://preprod.toastebikepolo.ca'
@@ -15,6 +20,7 @@ exports.handler = async (event, context) => {
     };
 
     if (event.httpMethod === 'OPTIONS') {
+        console.log('OPTIONS request - returning CORS headers');
         return {
             statusCode: 200,
             headers: corsHeaders,
@@ -23,6 +29,7 @@ exports.handler = async (event, context) => {
     }
 
     if (event.httpMethod !== 'POST') {
+        console.log('Invalid HTTP method:', event.httpMethod);
         return {
             statusCode: 405,
             headers: corsHeaders,
@@ -31,7 +38,12 @@ exports.handler = async (event, context) => {
     }
 
     try {
+        console.log('Parsing request body...');
         const { orderData, emailType } = JSON.parse(event.body);
+        
+        console.log('=== EMAIL REQUEST DATA ===');
+        console.log('Email Type:', emailType);
+        console.log('Order Data:', JSON.stringify(orderData, null, 2));
         
         // Log email attempt for debugging
         console.log('Attempting to send email:', {
@@ -40,7 +52,15 @@ exports.handler = async (event, context) => {
             orderCode: orderData.orderCode
         });
 
+        // Check environment variables
+        console.log('=== ENVIRONMENT VARIABLES CHECK ===');
+        console.log('PROTON_EMAIL exists:', !!process.env.PROTON_EMAIL);
+        console.log('PROTON_EMAIL value:', process.env.PROTON_EMAIL ? `${process.env.PROTON_EMAIL.substring(0, 3)}***` : 'NOT SET');
+        console.log('PROTON_APP_PASSWORD exists:', !!process.env.PROTON_APP_PASSWORD);
+        console.log('PROTON_APP_PASSWORD length:', process.env.PROTON_APP_PASSWORD ? process.env.PROTON_APP_PASSWORD.length : 0);
+
         // Create transporter using Proton Mail SMTP
+        console.log('Creating Proton Mail transporter...');
         const transporter = nodemailer.createTransporter({
             host: 'mail.proton.me',
             port: 587,
@@ -55,14 +75,19 @@ exports.handler = async (event, context) => {
         });
 
         // Verify transporter configuration
+        console.log('Verifying transporter configuration...');
         await transporter.verify();
+        console.log('✅ Transporter verification successful');
 
         let emailContent;
         let subject;
 
         if (emailType === 'customer') {
+            console.log('=== PREPARING CUSTOMER EMAIL ===');
             // Customer confirmation email
             subject = `Your Toasté Bike Polo Order - ${orderData.orderCode}`;
+            console.log('Customer email subject:', subject);
+            console.log('Customer email to:', orderData.customerEmail);
             emailContent = {
                 from: process.env.PROTON_EMAIL,
                 to: orderData.customerEmail,
@@ -99,8 +124,11 @@ exports.handler = async (event, context) => {
                 `
             };
         } else if (emailType === 'owner') {
+            console.log('=== PREPARING OWNER EMAIL ===');
             // Owner notification email
             subject = `New Order Received - ${orderData.orderCode}`;
+            console.log('Owner email subject:', subject);
+            console.log('Owner email to:', process.env.PROTON_EMAIL);
             emailContent = {
                 from: process.env.PROTON_EMAIL,
                 to: process.env.PROTON_EMAIL,
@@ -132,16 +160,27 @@ exports.handler = async (event, context) => {
                 `
             };
         } else {
+            console.log('❌ Invalid email type:', emailType);
             throw new Error('Invalid email type');
         }
+
+        console.log('=== SENDING EMAIL ===');
+        console.log('Email content prepared:', {
+            from: emailContent.from,
+            to: emailContent.to,
+            subject: emailContent.subject,
+            htmlLength: emailContent.html ? emailContent.html.length : 0
+        });
 
         // Send email
         const result = await transporter.sendMail(emailContent);
         
-        console.log('Email sent successfully:', {
+        console.log('✅ Email sent successfully:', {
             messageId: result.messageId,
             emailType,
-            to: emailContent.to
+            to: emailContent.to,
+            accepted: result.accepted,
+            rejected: result.rejected
         });
 
         return {
@@ -155,13 +194,18 @@ exports.handler = async (event, context) => {
         };
 
     } catch (error) {
-        console.error('Error sending email:', error);
+        console.error('❌ ERROR SENDING EMAIL:', error);
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
         return {
             statusCode: 500,
             headers: corsHeaders,
             body: JSON.stringify({ 
                 error: 'Failed to send email',
-                details: error.message 
+                details: error.message,
+                errorType: error.name
             })
         };
     }

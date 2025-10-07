@@ -25,8 +25,11 @@ class ToasterGame {
         this.rainSpeed = 3;
         this.baseRainSpawnRate = 0.02; // Base probability per frame
         this.rainSpawnRate = 0.02; // Current probability per frame (will increase)
-        this.toastSpawnRate = 0.1; // Probability per frame when shooting
+        this.toastSpawnRate = 0.3; // Probability per frame when shooting (increased for more reliable shooting)
         this.difficultyIncreaseRate = 0.001; // How much spawn rate increases per second
+        this.lastShotTime = 0;
+        this.minShotInterval = 200; // Minimum milliseconds between shots
+        this.hasShotThisClick = false; // Track if we've already shot for this click
         
         // Colors for rain balls - fluorescent colors with labels
         this.rainColors = [
@@ -97,6 +100,7 @@ class ToasterGame {
         this.canvas.addEventListener('mousedown', (e) => {
             if (this.gameRunning) {
                 this.isShooting = true;
+                this.hasShotThisClick = false; // Reset shot flag for new click
                 this.calculateShootDirection();
             }
         });
@@ -114,6 +118,7 @@ class ToasterGame {
                 this.mousePos.x = touch.clientX - rect.left;
                 this.mousePos.y = touch.clientY - rect.top;
                 this.isShooting = true;
+                this.hasShotThisClick = false; // Reset shot flag for new touch
                 this.calculateShootDirection();
             }
         });
@@ -176,12 +181,7 @@ class ToasterGame {
             bumpScale: 1.0,
             bumpDuration: 0,
             maxBumpDuration: 10, // frames
-            jumpVelocity: 0,
-            jumpHeight: 0,
-            rotation: 0,
-            rotationVelocity: 0,
-            bounceDuration: 0,
-            maxBounceDuration: 20 // frames for jump sequence
+            // Removed bounce and rotation - keeping only inflation
         };
         
         // Clear arrays
@@ -235,23 +235,12 @@ class ToasterGame {
             this.toaster.bumpDuration--;
             // Create a smooth bump effect using sine wave
             const progress = 1 - (this.toaster.bumpDuration / this.toaster.maxBumpDuration);
-            this.toaster.bumpScale = 1.0 + Math.sin(progress * Math.PI) * 0.1; // Scale from 1.0 to 1.1 and back
+            this.toaster.bumpScale = 1.0 + Math.sin(progress * Math.PI) * 0.05; // Scale from 1.0 to 1.05 and back
         } else {
             this.toaster.bumpScale = 1.0;
         }
         
-        // Handle bounce animation
-        if (this.toaster.bounceDuration > 0) {
-            this.toaster.bounceDuration--;
-            // Create a smooth bounce effect using sine wave
-            const bounceProgress = 1 - (this.toaster.bounceDuration / this.toaster.maxBounceDuration);
-            const bounceIntensity = Math.sin(bounceProgress * Math.PI);
-            this.toaster.bounceX = this.toaster.bounceX * bounceIntensity;
-            this.toaster.bounceY = this.toaster.bounceY * bounceIntensity;
-        } else {
-            this.toaster.bounceX = 0;
-            this.toaster.bounceY = 0;
-        }
+        // Removed bounce and rotation animation - keeping only inflation
         
         // Move toaster left and right
         this.toaster.x += this.toaster.direction * this.toaster.speed;
@@ -287,6 +276,7 @@ class ToasterGame {
         for (let i = this.rainBalls.length - 1; i >= 0; i--) {
             const ball = this.rainBalls[i];
             ball.y += ball.speed;
+            ball.rotation += ball.rotationSpeed;
             
             // Remove balls that are off screen
             if (ball.y > this.canvas.height) {
@@ -309,25 +299,28 @@ class ToasterGame {
     }
     
     spawnToasts() {
-        if (Math.random() < this.toastSpawnRate && this.toaster) {
-            // Trigger bump animation
-            this.toaster.bumpDuration = this.toaster.maxBumpDuration;
+        if (this.isShooting && this.toaster && !this.hasShotThisClick) {
+            const currentTime = Date.now();
             
-            // Trigger random bounce
-            this.toaster.bounceDuration = this.toaster.maxBounceDuration;
-            this.toaster.bounceX = (Math.random() - 0.5) * 8; // Random horizontal bounce -4 to +4
-            this.toaster.bounceY = (Math.random() - 0.5) * 6; // Random vertical bounce -3 to +3
-            
-            this.toasts.push({
-                x: this.toaster.x + this.toaster.width / 2 - 12, // Center the toast
-                y: this.toaster.y,
-                width: 24,
-                height: 24,
-                vx: this.shootDirection.x * this.toastSpeed,
-                vy: this.shootDirection.y * this.toastSpeed,
-                rotation: 0,
-                rotationSpeed: (Math.random() - 0.5) * 0.3 + 0.1 // Random spin speed between 0.1 and 0.4
-            });
+            // Check if enough time has passed since last shot
+            if (currentTime - this.lastShotTime >= this.minShotInterval) {
+                // Trigger bump animation
+                this.toaster.bumpDuration = this.toaster.maxBumpDuration;
+                
+                this.toasts.push({
+                    x: this.toaster.x + this.toaster.width / 2 - 12, // Center the toast
+                    y: this.toaster.y,
+                    width: 24,
+                    height: 24,
+                    vx: this.shootDirection.x * this.toastSpeed,
+                    vy: this.shootDirection.y * this.toastSpeed,
+                    rotation: 0,
+                    rotationSpeed: (Math.random() - 0.5) * 0.3 + 0.1 // Random spin speed between 0.1 and 0.4
+                });
+                
+                this.lastShotTime = currentTime;
+                this.hasShotThisClick = true; // Mark that we've shot for this click
+            }
         }
     }
     
@@ -340,7 +333,9 @@ class ToasterGame {
                 radius: 20, // Fixed size for all rain balls - made bigger
                 color: colorData.color,
                 label: colorData.label,
-                speed: Math.random() * 3 + this.rainSpeed
+                speed: Math.random() * 3 + this.rainSpeed,
+                rotation: 0,
+                rotationSpeed: (Math.random() - 0.5) * 0.2 // Random rotation speed -0.1 to +0.1
             });
         }
     }
@@ -411,16 +406,11 @@ class ToasterGame {
             const offsetX = (this.toaster.width - scaledWidth) / 2;
             const offsetY = (this.toaster.height - scaledHeight) / 2;
             
-            // Apply bounce offset
-            const finalX = this.toaster.x + offsetX + this.toaster.bounceX;
-            const finalY = this.toaster.y + offsetY + this.toaster.bounceY;
+            const finalX = this.toaster.x + offsetX;
+            const finalY = this.toaster.y + offsetY;
             
             if (this.toasterImage.complete) {
-                this.ctx.drawImage(this.toasterImage, 
-                    finalX, 
-                    finalY, 
-                    scaledWidth, 
-                    scaledHeight);
+                this.ctx.drawImage(this.toasterImage, finalX, finalY, scaledWidth, scaledHeight);
             } else {
                 // Fallback rectangle if image not loaded yet
                 this.ctx.fillStyle = '#2D2218';
@@ -451,10 +441,16 @@ class ToasterGame {
         
         // Draw rain balls
         for (const ball of this.rainBalls) {
+            this.ctx.save();
+            
+            // Apply rotation
+            this.ctx.translate(ball.x, ball.y);
+            this.ctx.rotate(ball.rotation);
+            
             // Draw the ball
             this.ctx.fillStyle = ball.color;
             this.ctx.beginPath();
-            this.ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            this.ctx.arc(0, 0, ball.radius, 0, Math.PI * 2);
             this.ctx.fill();
             
             // Draw the label
@@ -462,7 +458,9 @@ class ToasterGame {
             this.ctx.font = 'bold 12px FKRasterGrotesk';
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
-            this.ctx.fillText(ball.label, ball.x, ball.y);
+            this.ctx.fillText(ball.label, 0, 0);
+            
+            this.ctx.restore();
         }
         
         // Draw particles

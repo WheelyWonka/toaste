@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 y: Math.min(start.y, end.y) - arcBoost
             };
 
-            const duration = 950; // ms - slower, more floaty
+            const duration = 1600 + Math.random() * 800; // ms - slower, floatier per toast
             const startTime = performance.now();
             const spin = (Math.random() * 2 - 1) * 360; // random spin
 

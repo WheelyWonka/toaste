@@ -233,6 +233,53 @@ exports.handler = async (event, context) => {
         });
       }
 
+      // Send email notifications
+      try {
+        const emailData = {
+          orderCode: orderCode,
+          customerName: customerName,
+          customerEmail: customerEmail,
+          customerAddress: shippingAddress,
+          customerNotes: notes || '',
+          products: productDetails.map(product => ({
+            quantity: product.quantity,
+            spokeCount: product.spokeCount,
+            wheelSize: product.wheelSize,
+            price: product.quantity * product.unitPrice
+          })),
+          subtotal: totalSubtotal,
+          taxes: totalTaxAmount,
+          total: totalPrice
+        };
+
+        // Send customer confirmation email
+        await fetch(`${process.env.URL || 'https://toastebikepolo.netlify.app'}/.netlify/functions/send-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            orderData: emailData,
+            emailType: 'customer'
+          })
+        });
+
+        // Send owner notification email
+        await fetch(`${process.env.URL || 'https://toastebikepolo.netlify.app'}/.netlify/functions/send-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            orderData: emailData,
+            emailType: 'owner'
+          })
+        });
+      } catch (emailError) {
+        console.error('Error sending emails:', emailError);
+        // Don't fail the order if email fails
+      }
+
       // Return success response
       return {
         statusCode: 201,
@@ -306,52 +353,6 @@ exports.handler = async (event, context) => {
         });
       });
 
-      // Send email notifications
-      try {
-        const emailData = {
-          orderCode: order.fields['Order Code'],
-          customerName: order.fields['Customer Name'],
-          customerEmail: order.fields['Customer Email'],
-          customerAddress: order.fields['Shipping Address'],
-          customerNotes: order.fields['Notes'],
-          products: orderData.products.map(product => ({
-            quantity: product.quantity,
-            spokeCount: product.spokeCount,
-            wheelSize: product.wheelSize,
-            price: product.quantity * 45 // Base price
-          })),
-          subtotal: order.fields['Total Price CAD'] - order.fields['Tax Amount CAD'],
-          taxes: order.fields['Tax Amount CAD'],
-          total: order.fields['Total Price CAD']
-        };
-
-        // Send customer confirmation email
-        await fetch(`${process.env.URL || 'https://toastebikepolo.netlify.app'}/.netlify/functions/send-email`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            orderData: emailData,
-            emailType: 'customer'
-          })
-        });
-
-        // Send owner notification email
-        await fetch(`${process.env.URL || 'https://toastebikepolo.netlify.app'}/.netlify/functions/send-email`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            orderData: emailData,
-            emailType: 'owner'
-          })
-        });
-      } catch (emailError) {
-        console.error('Error sending emails:', emailError);
-        // Don't fail the order if email fails
-      }
 
       return {
         statusCode: 200,

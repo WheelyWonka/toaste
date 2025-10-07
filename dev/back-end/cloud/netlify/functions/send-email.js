@@ -32,6 +32,13 @@ exports.handler = async (event, context) => {
 
     try {
         const { orderData, emailType } = JSON.parse(event.body);
+        
+        // Log email attempt for debugging
+        console.log('Attempting to send email:', {
+            emailType,
+            to: emailType === 'customer' ? orderData.customerEmail : process.env.PROTON_EMAIL,
+            orderCode: orderData.orderCode
+        });
 
         // Create transporter using Proton Mail SMTP
         const transporter = nodemailer.createTransporter({
@@ -41,8 +48,14 @@ exports.handler = async (event, context) => {
             auth: {
                 user: process.env.PROTON_EMAIL,
                 pass: process.env.PROTON_APP_PASSWORD
+            },
+            tls: {
+                rejectUnauthorized: false
             }
         });
+
+        // Verify transporter configuration
+        await transporter.verify();
 
         let emailContent;
         let subject;
@@ -123,14 +136,21 @@ exports.handler = async (event, context) => {
         }
 
         // Send email
-        await transporter.sendMail(emailContent);
+        const result = await transporter.sendMail(emailContent);
+        
+        console.log('Email sent successfully:', {
+            messageId: result.messageId,
+            emailType,
+            to: emailContent.to
+        });
 
         return {
             statusCode: 200,
             headers: corsHeaders,
             body: JSON.stringify({ 
                 success: true, 
-                message: 'Email sent successfully' 
+                message: 'Email sent successfully',
+                messageId: result.messageId
             })
         };
 

@@ -483,14 +483,42 @@ input:hover, select:hover, textarea:hover {
 #game-ui {
     position: absolute;
     top: 20px;
-    left: 20px;
-    right: 20px;
+    left: 0;
+    right: 0;
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
     z-index: 10001;
-    font-size: 18px;
+    padding: 0 20px;
+}
+
+#game-score {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 32px;
     font-weight: bold;
     color: var(--text-color);
+    font-family: 'TAYMilkbar', sans-serif;
+}
+
+#game-lives {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+    padding: 0 1rem;
+}
+
+.toast-icon {
+    width: 24px;
+    height: 24px;
+    display: block;
+    transition: opacity 0.2s ease;
+}
+
+.toast-icon.lost {
+    opacity: 0.3;
+    filter: grayscale(100%) brightness(0.7);
 }
 
 #game-canvas {
@@ -560,10 +588,17 @@ input:hover, select:hover, textarea:hover {
 /* Mobile optimizations */
 @media (max-width: 768px) {
     #game-ui {
-        font-size: 16px;
         top: 10px;
-        left: 10px;
-        right: 10px;
+        padding: 0 10px;
+    }
+    
+    #game-score {
+        font-size: 28px;
+    }
+    
+    .toast-icon {
+        width: 20px;
+        height: 20px;
     }
     
     #game-over-screen {

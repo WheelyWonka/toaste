@@ -486,7 +486,18 @@ class ToasterGame {
     
     updateUI() {
         document.getElementById('score-value').textContent = this.score;
-        document.getElementById('lives-value').textContent = this.lives;
+        this.updateLivesDisplay();
+    }
+    
+    updateLivesDisplay() {
+        const toastIcons = document.querySelectorAll('.toast-icon');
+        toastIcons.forEach((icon, index) => {
+            if (index < this.lives) {
+                icon.classList.remove('lost');
+            } else {
+                icon.classList.add('lost');
+            }
+        });
     }
     
     gameOver() {

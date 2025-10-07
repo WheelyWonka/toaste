@@ -63,15 +63,18 @@ exports.handler = async (event, context) => {
         console.log('Creating Proton Mail transporter...');
         const transporter = nodemailer.createTransport({
             host: 'mail.proton.me',
-            port: 587,
-            secure: false, // true for 465, false for other ports
+            port: 465,
+            secure: true, // Use SSL for port 465
             auth: {
                 user: process.env.PROTON_EMAIL,
                 pass: process.env.PROTON_APP_PASSWORD
             },
             tls: {
                 rejectUnauthorized: false
-            }
+            },
+            connectionTimeout: 30000, // 30 seconds
+            greetingTimeout: 15000,   // 15 seconds
+            socketTimeout: 30000      // 30 seconds
         });
 
         // Verify transporter configuration

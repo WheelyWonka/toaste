@@ -1,44 +1,38 @@
-// Using Proton Mail SMTP with improved serverless compatibility
+// Using Resend API for reliable serverless email sending
 
-const nodemailer = require('nodemailer');
-
-// Function to send email via Proton Mail SMTP
+// Function to send email via Resend API
 async function sendEmailViaProtonAPI(emailContent) {
-    console.log('Sending email via Proton Mail SMTP...');
+    console.log('Sending email via Resend API...');
     
-    // Create transporter with optimized settings for serverless
-    const transporter = nodemailer.createTransport({
-        host: 'mail.proton.me',
-        port: 587,
-        secure: false,
-        auth: {
-            user: process.env.PROTON_EMAIL,
-            pass: process.env.PROTON_APP_PASSWORD
-        },
-        tls: {
-            rejectUnauthorized: false,
-            minVersion: 'TLSv1.2'
-        },
-        connectionTimeout: 20000, // 20 seconds
-        greetingTimeout: 10000,   // 10 seconds
-        socketTimeout: 20000,     // 20 seconds
-        pool: false,              // Disable connection pooling
-        maxConnections: 1,
-        maxMessages: 1
-    });
-
-    try {
-        // Send email
-        const result = await transporter.sendMail(emailContent);
-        console.log('Proton Mail SMTP response:', result);
-        return { messageId: result.messageId };
-    } catch (error) {
-        console.error('Proton Mail SMTP error:', error);
-        throw error;
-    } finally {
-        // Close the transporter
-        transporter.close();
+    const resendApiKey = process.env.RESEND_API_KEY;
+    
+    if (!resendApiKey) {
+        throw new Error('RESEND_API_KEY environment variable is not set');
     }
+    
+    console.log('Using Resend API for email sending...');
+    const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            from: 'Toasté Bike Polo <noreply@toastebikepolo.ca>',
+            to: [emailContent.to],
+            subject: emailContent.subject,
+            html: emailContent.html
+        })
+    });
+    
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Resend API failed: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('Resend API response:', result);
+    return { messageId: result.id };
 }
 
 exports.handler = async (event, context) => {
@@ -95,13 +89,11 @@ exports.handler = async (event, context) => {
 
         // Check environment variables
         console.log('=== ENVIRONMENT VARIABLES CHECK ===');
-        console.log('PROTON_EMAIL exists:', !!process.env.PROTON_EMAIL);
-        console.log('PROTON_EMAIL value:', process.env.PROTON_EMAIL ? `${process.env.PROTON_EMAIL.substring(0, 3)}***` : 'NOT SET');
-        console.log('PROTON_APP_PASSWORD exists:', !!process.env.PROTON_APP_PASSWORD);
-        console.log('PROTON_APP_PASSWORD length:', process.env.PROTON_APP_PASSWORD ? process.env.PROTON_APP_PASSWORD.length : 0);
+        console.log('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
+        console.log('RESEND_API_KEY length:', process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.length : 0);
 
-        // Using Proton Mail SMTP
-        console.log('Using Proton Mail SMTP for sending emails...');
+        // Using Resend API
+        console.log('Using Resend API for sending emails...');
 
         let emailContent;
         let subject;
@@ -113,7 +105,7 @@ exports.handler = async (event, context) => {
             console.log('Customer email subject:', subject);
             console.log('Customer email to:', orderData.customerEmail);
             emailContent = {
-                from: process.env.PROTON_EMAIL,
+                from: 'Toasté Bike Polo <noreply@toastebikepolo.ca>',
                 to: orderData.customerEmail,
                 subject: subject,
                 html: `
@@ -154,7 +146,7 @@ exports.handler = async (event, context) => {
             console.log('Owner email subject:', subject);
             console.log('Owner email to:', process.env.PROTON_EMAIL);
             emailContent = {
-                from: process.env.PROTON_EMAIL,
+                from: 'Toasté Bike Polo <noreply@toastebikepolo.ca>',
                 to: process.env.PROTON_EMAIL,
                 subject: subject,
                 html: `
@@ -188,7 +180,7 @@ exports.handler = async (event, context) => {
             throw new Error('Invalid email type');
         }
 
-        console.log('=== SENDING EMAIL VIA PROTON SMTP ===');
+        console.log('=== SENDING EMAIL VIA RESEND API ===');
         console.log('Email content prepared:', {
             from: emailContent.from,
             to: emailContent.to,
@@ -196,10 +188,10 @@ exports.handler = async (event, context) => {
             htmlLength: emailContent.html ? emailContent.html.length : 0
         });
 
-        // Send email using Proton Mail SMTP
+        // Send email using Resend API
         const result = await sendEmailViaProtonAPI(emailContent);
         
-        console.log('✅ Email sent successfully via Proton SMTP:', {
+        console.log('✅ Email sent successfully via Resend API:', {
             messageId: result.messageId,
             emailType,
             to: emailContent.to
@@ -210,7 +202,7 @@ exports.handler = async (event, context) => {
             headers: corsHeaders,
             body: JSON.stringify({ 
                 success: true, 
-                message: 'Email sent successfully via Proton SMTP',
+                message: 'Email sent successfully via Resend API',
                 messageId: result.messageId
             })
         };

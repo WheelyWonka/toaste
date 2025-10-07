@@ -110,8 +110,8 @@ exports.handler = async (event, context) => {
                 subject: subject,
                 html: `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <div style="text-align: center; margin-bottom: 10px; display:block; width: 200px; height: auto;">
-                           <img src="https://preprod.toastebikepolo.ca/assets/graphics/images/cover-seo.jpg" alt="Toasté Bike Polo Cover" style="width: 100%;max-width: 200px; height: auto; display: block; margin: 0 auto;">
+                        <div style="text-align: center; margin-bottom: 10px; display:block; width: 100%; background-color: #efca52;">
+                           <img src="https://preprod.toastebikepolo.ca/assets/graphics/images/cover-mail.jpg" alt="Toasté Bike Polo Cover" style="width: 100%; height: auto; display: block; margin: 0 auto;">
                         </div>
                         <h2 style="color: #2d2218; text-align: center;">Your Order Confirmation</h2>
                         <p>Hi ${orderData.customerName},</p>

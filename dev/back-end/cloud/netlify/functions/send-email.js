@@ -6,7 +6,7 @@ function getEmailContent(orderData, emailType, language = 'en') {
     
     if (emailType === 'customer') {
         const subject = isFrench 
-            ? `Votre commande Toasté Bike Polo - ${orderData.orderCode}`
+            ? `Tacommande Toasté Bike Polo - ${orderData.orderCode}`
             : `Your Toasté Bike Polo Order - ${orderData.orderCode}`;
             
         const html = isFrench ? `
@@ -33,7 +33,7 @@ function getEmailContent(orderData, emailType, language = 'en') {
                 <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
                     <h3 style="margin-top: 0;">Instructions de paiement</h3>
                     <p><strong>Envoie ton paiement à : toastebikepolo@proton.me</strong></p>
-                    <p>Les Canadiens peuvent utiliser Interac, les autres peuvent utiliser PayPal.</p>
+                    <p>Les Canadien.es peuvent utiliser Interac, les autres peuvent utiliser PayPal.</p>
                     <p><strong>🚨 N'oublie pas d'inclure ton code de commande dans les détails du paiement !</strong></p>
                 </div>
                 

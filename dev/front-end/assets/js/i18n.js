@@ -37,6 +37,9 @@ class I18n {
         this.currentLang = lang;
         localStorage.setItem('language', lang);
         this.loadTranslations();
+        
+        // Dispatch custom event for language change
+        window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
     }
 
     t(key) {

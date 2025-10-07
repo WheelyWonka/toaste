@@ -195,6 +195,63 @@ function getSpokeText() {
     return currentLang === 'fr' ? 'rayons' : 'spokes';
 }
 
+// Get validation messages based on current language
+function getValidationMessages() {
+    const currentLang = localStorage.getItem('language') || navigator.language.split('-')[0];
+    
+    if (currentLang === 'fr') {
+        return {
+            nameRequired: 'Entre ton nom',
+            emailRequired: 'Entre ton email',
+            emailInvalid: 'Entre une adresse email valide',
+            addressRequired: 'Entre ton adresse'
+        };
+    } else {
+        return {
+            nameRequired: 'Please enter your name',
+            emailRequired: 'Please enter your email',
+            emailInvalid: 'Please enter a valid email address',
+            addressRequired: 'Please enter your address'
+        };
+    }
+}
+
+// Update existing error messages when language changes
+function updateExistingErrorMessages() {
+    const messages = getValidationMessages();
+    
+    // Check each field for existing errors and update them
+    const fields = ['name', 'email', 'address'];
+    
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        const formGroup = field.closest('.form-group');
+        const existingError = formGroup.querySelector('.field-error');
+        
+        if (existingError) {
+            // Determine which message to show based on the field and current validation state
+            let newMessage = '';
+            
+            if (fieldId === 'name' && !validateName(field.value)) {
+                newMessage = messages.nameRequired;
+            } else if (fieldId === 'email') {
+                if (!field.value.trim()) {
+                    newMessage = messages.emailRequired;
+                } else if (!validateEmail(field.value)) {
+                    newMessage = messages.emailInvalid;
+                }
+            } else if (fieldId === 'address' && !validateAddress(field.value)) {
+                newMessage = messages.addressRequired;
+            }
+            
+            // Update the error message if we have a new one
+            if (newMessage) {
+                existingError.textContent = newMessage;
+            }
+        }
+    });
+}
+
 // Calculate price for a product
 function calculateProductPrice(product) {
     return PRICING.basePrice * product.quantity;
@@ -840,11 +897,12 @@ function clearFieldError(fieldId) {
 
 function validateForm() {
     let isValid = true;
+    const messages = getValidationMessages();
     
     // Validate name
     const name = document.getElementById('name').value;
     if (!validateName(name)) {
-        showFieldError('name', i18n.t('contactForm.fullName.required'));
+        showFieldError('name', messages.nameRequired);
         isValid = false;
     } else {
         clearFieldError('name');
@@ -853,10 +911,10 @@ function validateForm() {
     // Validate email
     const email = document.getElementById('email').value;
     if (!email.trim()) {
-        showFieldError('email', i18n.t('contactForm.email.required'));
+        showFieldError('email', messages.emailRequired);
         isValid = false;
     } else if (!validateEmail(email)) {
-        showFieldError('email', i18n.t('contactForm.email.invalid'));
+        showFieldError('email', messages.emailInvalid);
         isValid = false;
     } else {
         clearFieldError('email');
@@ -865,7 +923,7 @@ function validateForm() {
     // Validate address
     const address = document.getElementById('address').value;
     if (!validateAddress(address)) {
-        showFieldError('address', i18n.t('contactForm.address.required'));
+        showFieldError('address', messages.addressRequired);
         isValid = false;
     } else {
         clearFieldError('address');
@@ -897,7 +955,8 @@ customerForm.addEventListener('submit', (e) => {
 document.getElementById('name').addEventListener('blur', () => {
     const name = document.getElementById('name').value;
     if (name && !validateName(name)) {
-        showFieldError('name', i18n.t('contactForm.fullName.required'));
+        const messages = getValidationMessages();
+        showFieldError('name', messages.nameRequired);
     } else {
         clearFieldError('name');
     }
@@ -906,7 +965,8 @@ document.getElementById('name').addEventListener('blur', () => {
 document.getElementById('email').addEventListener('blur', () => {
     const email = document.getElementById('email').value;
     if (email && !validateEmail(email)) {
-        showFieldError('email', i18n.t('contactForm.email.invalid'));
+        const messages = getValidationMessages();
+        showFieldError('email', messages.emailInvalid);
     } else {
         clearFieldError('email');
     }
@@ -915,7 +975,8 @@ document.getElementById('email').addEventListener('blur', () => {
 document.getElementById('address').addEventListener('blur', () => {
     const address = document.getElementById('address').value;
     if (address && !validateAddress(address)) {
-        showFieldError('address', i18n.t('contactForm.address.required'));
+        const messages = getValidationMessages();
+        showFieldError('address', messages.addressRequired);
     } else {
         clearFieldError('address');
     }
@@ -1209,10 +1270,14 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCartFromStorage();
     loadContactInfoFromStorage();
     
-    // Listen for language changes to update cart display
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'language') {
-            updateCartDisplay();
+    // Listen for language changes to update cart display and review
+    window.addEventListener('languageChanged', () => {
+        updateCartDisplay();
+        // Update review display if it's currently visible
+        if (reviewSection.style.display === 'block') {
+            updateReviewDisplay();
         }
+        // Update existing error messages
+        updateExistingErrorMessages();
     });
 }); 

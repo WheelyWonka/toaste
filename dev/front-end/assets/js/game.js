@@ -42,6 +42,10 @@ class ToasterGame {
         this.toasterImage = null;
         this.toastImage = null;
         
+        // Track loop/timers to ensure proper teardown
+        this.rafId = null;
+        this.countdownIntervalId = null;
+        this.countdownTimeoutId = null;
         this.init();
     }
     
@@ -171,6 +175,8 @@ class ToasterGame {
         const countdownScreen = document.getElementById('countdown-screen');
         const countdownNumber = document.getElementById('countdown-number');
         
+        // Clear any previous timers before starting a new countdown
+        this.clearTimers();
         countdownScreen.style.display = 'flex';
         countdownNumber.textContent = '3';
         
@@ -181,15 +187,18 @@ class ToasterGame {
                 countdownNumber.textContent = count;
             } else {
                 clearInterval(countdownInterval);
+                this.countdownIntervalId = null;
                 countdownNumber.textContent = 'POLO!';
                 
                 // Wait a bit longer for "POLO!" then start the game
-                setTimeout(() => {
+                this.countdownTimeoutId = setTimeout(() => {
                     countdownScreen.style.display = 'none';
                     this.startGameplay();
+                    this.countdownTimeoutId = null;
                 }, 800);
             }
         }, 1000);
+        this.countdownIntervalId = countdownInterval;
     }
     
     startGameplay() {
@@ -248,12 +257,16 @@ class ToasterGame {
     
     gameLoop() {
         // Continue game loop if game is running OR if flash sequence is active OR if toaster is dying
-        if (!this.gameRunning && !this.screenFlash.active && !(this.toaster && this.toaster.isDead)) return;
+        if (!this.gameRunning && !this.screenFlash.active && !(this.toaster && this.toaster.isDead)) {
+            // No more animation frames needed
+            this.rafId = null;
+            return;
+        }
         
         this.update();
         this.render();
         
-        requestAnimationFrame(() => this.gameLoop());
+        this.rafId = requestAnimationFrame(() => this.gameLoop());
     }
     
     update() {
@@ -712,7 +725,8 @@ class ToasterGame {
     
     restartGame() {
         document.getElementById('game-over-screen').classList.add('hidden');
-        
+        // Ensure previous loop/timers are stopped and transient state reset
+        this.fullStop();
         // Reset toaster to alive state
         if (this.toaster) {
             this.toaster.isDead = false;
@@ -724,15 +738,53 @@ class ToasterGame {
             this.toaster.deathRotationSpeed = 0.1;
             this.toaster.opacity = 0; // Will fade in during startGameplay
         }
-        
         this.startGame();
     }
     
     exitGame() {
-        this.gameRunning = false;
+        // Stop game loop and timers, reset transient effects
+        this.fullStop();
         document.getElementById('game-over-screen').classList.add('hidden');
         document.getElementById('game-overlay').classList.add('hidden');
         document.querySelector('.main-content').classList.remove('fade-out');
+    }
+    
+    // Helpers to ensure proper teardown and a clean restart
+    clearTimers() {
+        if (this.countdownIntervalId) {
+            clearInterval(this.countdownIntervalId);
+            this.countdownIntervalId = null;
+        }
+        if (this.countdownTimeoutId) {
+            clearTimeout(this.countdownTimeoutId);
+            this.countdownTimeoutId = null;
+        }
+    }
+    
+    fullStop() {
+        // Stop gameplay and animation frames
+        this.gameRunning = false;
+        if (this.rafId !== null) {
+            cancelAnimationFrame(this.rafId);
+            this.rafId = null;
+        }
+        // Clear countdown timers
+        this.clearTimers();
+        // Reset transient visual states so loop termination condition is met
+        if (this.screenFlash) {
+            this.screenFlash.active = false;
+            this.screenFlash.duration = 0;
+            this.screenFlash.flashCount = 0;
+            this.screenFlash.flashDelay = 0;
+            this.screenFlash.isGameOver = false;
+        }
+        if (this.toaster) {
+            this.toaster.isDead = false;
+        }
+        // Clear dynamic entities
+        this.toasts = [];
+        this.rainBalls = [];
+        this.particles = [];
     }
 }
 
@@ -842,6 +894,9 @@ class GameActivator {
             // Initialize and start game
             if (!this.game) {
                 this.game = new ToasterGame();
+            } else {
+                // If a game instance exists, ensure it's fully stopped before starting again
+                this.game.fullStop();
             }
             this.game.startGame();
         }, 1000);

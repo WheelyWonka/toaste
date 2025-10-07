@@ -521,14 +521,14 @@ input:hover, select:hover, textarea:hover {
     padding: .5rem .5rem 0 0 ;
 }
 
-.toast-icon {
+.toast-live-icon {
     width: 24px;
     height: 24px;
     display: block;
     transition: opacity 0.2s ease;
 }
 
-.toast-icon.lost {
+.toast-live-icon.lost {
     opacity: 0.3;
     filter: grayscale(100%) brightness(0.7);
 }

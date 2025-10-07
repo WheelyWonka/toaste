@@ -689,7 +689,7 @@ class ToasterGame {
     }
     
     updateLivesDisplay() {
-        const toastIcons = document.querySelectorAll('.toast-icon');
+        const toastIcons = document.querySelectorAll('.toast-live-icon');
         toastIcons.forEach((icon, index) => {
             if (index < this.lives) {
                 icon.classList.remove('lost');

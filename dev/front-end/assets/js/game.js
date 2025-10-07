@@ -743,6 +743,7 @@ class GameActivator {
         this.clickTimeout = null;
         this.clickWindow = 2000; // 2 seconds window for 10 clicks
         this.game = null;
+        this.logoAnimating = false; // Flag to prevent multiple logo animations
         
         this.init();
     }
@@ -767,6 +768,10 @@ class GameActivator {
         e.preventDefault();
         
         this.clickCount++;
+        console.log(`3D Model clicked! Count: ${this.clickCount}`);
+        
+        // Animate the main logo on each click
+        this.animateMainLogo();
         
         // Clear existing timeout
         if (this.clickTimeout) {
@@ -783,6 +788,41 @@ class GameActivator {
         this.clickTimeout = setTimeout(() => {
             this.clickCount = 0;
         }, this.clickWindow);
+    }
+    
+    animateMainLogo() {
+        const logoLink = document.querySelector('.logo-container a');
+        if (!logoLink) return;
+
+        // Prevent multiple animations from running simultaneously
+        if (this.logoAnimating) {
+            console.log('Logo animation already running, skipping...');
+            return;
+        }
+        
+        console.log('Starting logo animation...');
+        this.logoAnimating = true;
+
+        const maxInflation = 1.05; // 5% inflation like in the game
+        const animationDuration = 200; // 200ms total animation
+
+        // Simple CSS transition animation
+        logoLink.style.transition = `transform ${animationDuration}ms ease-in-out`;
+        
+        // Inflate
+        logoLink.style.transform = `scale(${maxInflation})`;
+        
+        // After half the duration, deflate
+        setTimeout(() => {
+            logoLink.style.transform = 'scale(1.0)';
+        }, animationDuration / 2);
+        
+        // Reset after animation completes
+        setTimeout(() => {
+            logoLink.style.transition = '';
+            this.logoAnimating = false;
+            console.log('Logo animation complete');
+        }, animationDuration);
     }
     
     activateGame() {

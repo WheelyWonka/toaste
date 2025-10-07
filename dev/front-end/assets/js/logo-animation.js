@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, { passive: true });
         }
 
+
     } catch (error) {
         console.error('Error loading SVG:', error);
     }

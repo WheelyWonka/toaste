@@ -469,6 +469,10 @@ input:hover, select:hover, textarea:hover {
     pointer-events: none;
 }
 
+.hidden {
+    display: none !important;
+}
+
 #game-container {
     position: relative;
     width: 100vw;

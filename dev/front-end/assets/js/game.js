@@ -23,8 +23,10 @@ class ToasterGame {
         this.toasterSpeed = 2;
         this.toastSpeed = 8;
         this.rainSpeed = 3;
-        this.rainSpawnRate = 0.02; // Probability per frame
+        this.baseRainSpawnRate = 0.02; // Base probability per frame
+        this.rainSpawnRate = 0.02; // Current probability per frame (will increase)
         this.toastSpawnRate = 0.1; // Probability per frame when shooting
+        this.difficultyIncreaseRate = 0.001; // How much spawn rate increases per second
         
         // Colors for rain balls - fluorescent colors with labels
         this.rainColors = [
@@ -161,6 +163,7 @@ class ToasterGame {
         this.gameStartTime = Date.now();
         this.score = 0;
         this.lives = this.maxLives;
+        this.rainSpawnRate = this.baseRainSpawnRate; // Reset spawn rate
         
         // Initialize toaster
         this.toaster = {
@@ -169,7 +172,16 @@ class ToasterGame {
             width: 80,
             height: 50,
             direction: 1,
-            speed: this.toasterSpeed
+            speed: this.toasterSpeed,
+            bumpScale: 1.0,
+            bumpDuration: 0,
+            maxBumpDuration: 10, // frames
+            jumpVelocity: 0,
+            jumpHeight: 0,
+            rotation: 0,
+            rotationVelocity: 0,
+            bounceDuration: 0,
+            maxBounceDuration: 20 // frames for jump sequence
         };
         
         // Clear arrays
@@ -194,6 +206,9 @@ class ToasterGame {
         const currentTime = Date.now();
         this.score = Math.floor((currentTime - this.gameStartTime) / 1000);
         
+        // Increase difficulty over time
+        this.rainSpawnRate = this.baseRainSpawnRate + (this.score * this.difficultyIncreaseRate);
+        
         this.updateToaster();
         this.updateToasts();
         this.updateRainBalls();
@@ -214,6 +229,29 @@ class ToasterGame {
     
     updateToaster() {
         if (!this.toaster) return;
+        
+        // Handle bump animation
+        if (this.toaster.bumpDuration > 0) {
+            this.toaster.bumpDuration--;
+            // Create a smooth bump effect using sine wave
+            const progress = 1 - (this.toaster.bumpDuration / this.toaster.maxBumpDuration);
+            this.toaster.bumpScale = 1.0 + Math.sin(progress * Math.PI) * 0.1; // Scale from 1.0 to 1.1 and back
+        } else {
+            this.toaster.bumpScale = 1.0;
+        }
+        
+        // Handle bounce animation
+        if (this.toaster.bounceDuration > 0) {
+            this.toaster.bounceDuration--;
+            // Create a smooth bounce effect using sine wave
+            const bounceProgress = 1 - (this.toaster.bounceDuration / this.toaster.maxBounceDuration);
+            const bounceIntensity = Math.sin(bounceProgress * Math.PI);
+            this.toaster.bounceX = this.toaster.bounceX * bounceIntensity;
+            this.toaster.bounceY = this.toaster.bounceY * bounceIntensity;
+        } else {
+            this.toaster.bounceX = 0;
+            this.toaster.bounceY = 0;
+        }
         
         // Move toaster left and right
         this.toaster.x += this.toaster.direction * this.toaster.speed;
@@ -272,6 +310,14 @@ class ToasterGame {
     
     spawnToasts() {
         if (Math.random() < this.toastSpawnRate && this.toaster) {
+            // Trigger bump animation
+            this.toaster.bumpDuration = this.toaster.maxBumpDuration;
+            
+            // Trigger random bounce
+            this.toaster.bounceDuration = this.toaster.maxBounceDuration;
+            this.toaster.bounceX = (Math.random() - 0.5) * 8; // Random horizontal bounce -4 to +4
+            this.toaster.bounceY = (Math.random() - 0.5) * 6; // Random vertical bounce -3 to +3
+            
             this.toasts.push({
                 x: this.toaster.x + this.toaster.width / 2 - 12, // Center the toast
                 y: this.toaster.y,
@@ -356,12 +402,32 @@ class ToasterGame {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Draw toaster
-        if (this.toaster && this.toasterImage.complete) {
-            this.ctx.drawImage(this.toasterImage, this.toaster.x, this.toaster.y, this.toaster.width, this.toaster.height);
-        } else if (this.toaster) {
-            // Fallback rectangle if image not loaded yet
-            this.ctx.fillStyle = '#2D2218';
-            this.ctx.fillRect(this.toaster.x, this.toaster.y, this.toaster.width, this.toaster.height);
+        if (this.toaster) {
+            this.ctx.save();
+            
+            // Apply bump scaling
+            const scaledWidth = this.toaster.width * this.toaster.bumpScale;
+            const scaledHeight = this.toaster.height * this.toaster.bumpScale;
+            const offsetX = (this.toaster.width - scaledWidth) / 2;
+            const offsetY = (this.toaster.height - scaledHeight) / 2;
+            
+            // Apply bounce offset
+            const finalX = this.toaster.x + offsetX + this.toaster.bounceX;
+            const finalY = this.toaster.y + offsetY + this.toaster.bounceY;
+            
+            if (this.toasterImage.complete) {
+                this.ctx.drawImage(this.toasterImage, 
+                    finalX, 
+                    finalY, 
+                    scaledWidth, 
+                    scaledHeight);
+            } else {
+                // Fallback rectangle if image not loaded yet
+                this.ctx.fillStyle = '#2D2218';
+                this.ctx.fillRect(finalX, finalY, scaledWidth, scaledHeight);
+            }
+            
+            this.ctx.restore();
         }
         
         // Draw toasts

@@ -1178,7 +1178,8 @@ document.querySelector('#order-review .submit-btn').addEventListener('click', as
         customerName: document.getElementById('name').value,
         customerEmail: document.getElementById('email').value,
         shippingAddress: document.getElementById('address').value,
-        notes: document.getElementById('notes').value
+        notes: document.getElementById('notes').value,
+        language: localStorage.getItem('language') || navigator.language.split('-')[0]
     };
 
     try {

@@ -1,5 +1,152 @@
 // Using Resend API for reliable serverless email sending
 
+// Get email content based on language
+function getEmailContent(orderData, emailType, language = 'en') {
+    const isFrench = language === 'fr';
+    
+    if (emailType === 'customer') {
+        const subject = isFrench 
+            ? `Votre commande Toasté Bike Polo - ${orderData.orderCode}`
+            : `Your Toasté Bike Polo Order - ${orderData.orderCode}`;
+            
+        const html = isFrench ? `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="text-align: center; margin-bottom: 10px; display:block; width: 100%; background-color: #efca52;">
+                   <img src="https://preprod.toastebikepolo.ca/assets/graphics/images/cover-mail.jpg" alt="Toasté Bike Polo Cover" style="width: 100%; height: auto; display: block; margin: 0 auto;">
+                </div>
+                <h2 style="color: #2d2218; text-align: center;">Confirmation de votre commande</h2>
+                <p>Salut ${orderData.customerName},</p>
+                <p>Merci pour ta commande ! Voici les détails :</p>
+                
+                <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
+                    <h3 style="margin-top: 0;">Code de commande : ${orderData.orderCode}</h3>
+                    <p style="margin-bottom:0;"><strong>Total : CAD$${orderData.total.toFixed(2)}</strong></p>
+                </div>
+                
+                <h3>Tes articles :</h3>
+                <ul>
+                    ${orderData.products.map(product => 
+                        `<li>${product.quantity}x ${product.spokeCount} rayons, ${product.wheelSize}" - CAD$${product.price.toFixed(2)}</li>`
+                    ).join('')}
+                </ul>
+                
+                <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
+                    <h3 style="margin-top: 0;">Instructions de paiement</h3>
+                    <p><strong>Envoie ton paiement à : toastebikepolo@proton.me</strong></p>
+                    <p>Les Canadiens peuvent utiliser Interac, les autres peuvent utiliser PayPal.</p>
+                    <p><strong>🚨 N'oublie pas d'inclure ton code de commande dans les détails du paiement !</strong></p>
+                </div>
+                
+                <p>On va traiter ta commande dès qu'on reçoit ton paiement.</p>
+                <p>Merci d'avoir choisi Toasté Bike Polo !</p>
+                <p>Salutations,<br>Germain</p>
+            </div>
+        ` : `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="text-align: center; margin-bottom: 10px; display:block; width: 100%; background-color: #efca52;">
+                   <img src="https://preprod.toastebikepolo.ca/assets/graphics/images/cover-mail.jpg" alt="Toasté Bike Polo Cover" style="width: 100%; height: auto; display: block; margin: 0 auto;">
+                </div>
+                <h2 style="color: #2d2218; text-align: center;">Your Order Confirmation</h2>
+                <p>Hi ${orderData.customerName},</p>
+                <p>Thank you for your order! Here are your order details:</p>
+                
+                <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
+                    <h3 style="margin-top: 0;">Order Code: ${orderData.orderCode}</h3>
+                    <p style="margin-bottom:0;"><strong>Total: CAD$${orderData.total.toFixed(2)}</strong></p>
+                </div>
+                
+                <h3>Your Items:</h3>
+                <ul>
+                    ${orderData.products.map(product => 
+                        `<li>${product.quantity}x ${product.spokeCount} spokes, ${product.wheelSize}" - CAD$${product.price.toFixed(2)}</li>`
+                    ).join('')}
+                </ul>
+                
+                <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
+                    <h3 style="margin-top: 0;">Payment Instructions</h3>
+                    <p><strong>Send payment to: toastebikepolo@proton.me</strong></p>
+                    <p>Canadians can use Interac, others can use PayPal.</p>
+                    <p><strong>🚨 Don't forget to include your order code in the payment details!</strong></p>
+                </div>
+                
+                <p>We'll process your order as soon as we receive your payment.</p>
+                <p>Thanks for choosing Toasté Bike Polo!</p>
+                <p>Best regards,<br>Germain</p>
+            </div>
+        `;
+        
+        return {
+            from: 'Toasté Bike Polo <noreply@toastebikepolo.ca>',
+            to: orderData.customerEmail,
+            subject: subject,
+            html: html
+        };
+    } else if (emailType === 'owner') {
+        const subject = isFrench 
+            ? `Nouvelle commande reçue - ${orderData.orderCode}`
+            : `New Order Received - ${orderData.orderCode}`;
+            
+        const html = isFrench ? `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #2d2218;">Nouvelle commande reçue !</h2>
+                
+                <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
+                    <h3 style="margin-top: 0;">Code de commande : ${orderData.orderCode}</h3>
+                    <p><strong>Total : CAD$${orderData.total.toFixed(2)}</strong></p>
+                </div>
+                
+                <h3>Informations client :</h3>
+                <p><strong>Nom :</strong> ${orderData.customerName}</p>
+                <p><strong>Email :</strong> ${orderData.customerEmail}</p>
+                <p><strong>Adresse :</strong> ${orderData.customerAddress}</p>
+                ${orderData.customerNotes ? `<p><strong>Notes :</strong> ${orderData.customerNotes}</p>` : ''}
+                
+                <h3>Articles commandés :</h3>
+                <ul>
+                    ${orderData.products.map(product => 
+                        `<li>${product.quantity}x ${product.spokeCount} rayons, ${product.wheelSize}" - CAD$${product.price.toFixed(2)}</li>`
+                    ).join('')}
+                </ul>
+                
+                <p>Commande passée le : ${new Date().toLocaleString()}</p>
+            </div>
+        ` : `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #2d2218;">New Order Received!</h2>
+                
+                <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
+                    <h3 style="margin-top: 0;">Order Code: ${orderData.orderCode}</h3>
+                    <p><strong>Total: CAD$${orderData.total.toFixed(2)}</strong></p>
+                </div>
+                
+                <h3>Customer Information:</h3>
+                <p><strong>Name:</strong> ${orderData.customerName}</p>
+                <p><strong>Email:</strong> ${orderData.customerEmail}</p>
+                <p><strong>Address:</strong> ${orderData.customerAddress}</p>
+                ${orderData.customerNotes ? `<p><strong>Notes:</strong> ${orderData.customerNotes}</p>` : ''}
+                
+                <h3>Order Items:</h3>
+                <ul>
+                    ${orderData.products.map(product => 
+                        `<li>${product.quantity}x ${product.spokeCount} spokes, ${product.wheelSize}" - CAD$${product.price.toFixed(2)}</li>`
+                    ).join('')}
+                </ul>
+                
+                <p>Order placed on: ${new Date().toLocaleString()}</p>
+            </div>
+        `;
+        
+        return {
+            from: 'Toasté Bike Polo <noreply@toastebikepolo.ca>',
+            to: process.env.PROTON_EMAIL,
+            subject: subject,
+            html: html
+        };
+    }
+    
+    throw new Error('Invalid email type');
+}
+
 // Function to send email via Resend API
 async function sendEmailViaProtonAPI(emailContent) {
     console.log('Sending email via Resend API...');
@@ -95,93 +242,13 @@ exports.handler = async (event, context) => {
         // Using Resend API
         console.log('Using Resend API for sending emails...');
 
-        let emailContent;
-        let subject;
-
-        if (emailType === 'customer') {
-            console.log('=== PREPARING CUSTOMER EMAIL ===');
-            // Customer confirmation email
-            subject = `Your Toasté Bike Polo Order - ${orderData.orderCode}`;
-            console.log('Customer email subject:', subject);
-            console.log('Customer email to:', orderData.customerEmail);
-            emailContent = {
-                from: 'Toasté Bike Polo <noreply@toastebikepolo.ca>',
-                to: orderData.customerEmail,
-                subject: subject,
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <div style="text-align: center; margin-bottom: 10px; display:block; width: 100%; background-color: #efca52;">
-                           <img src="https://preprod.toastebikepolo.ca/assets/graphics/images/cover-mail.jpg" alt="Toasté Bike Polo Cover" style="width: 100%; height: auto; display: block; margin: 0 auto;">
-                        </div>
-                        <h2 style="color: #2d2218; text-align: center;">Your Order Confirmation</h2>
-                        <p>Hi ${orderData.customerName},</p>
-                        <p>Thank you for your order! Here are your order details:</p>
-                        
-                        <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
-                            <h3 style="margin-top: 0;">Order Code: ${orderData.orderCode}</h3>
-                            <p style="margin-bottom:0;"><strong>Total: CAD$${orderData.total.toFixed(2)}</strong></p>
-                        </div>
-                        
-                        <h3>Your Items:</h3>
-                        <ul>
-                            ${orderData.products.map(product => 
-                                `<li>${product.quantity}x ${product.spokeCount} spokes, ${product.wheelSize} - CAD$${product.price.toFixed(2)}</li>`
-                            ).join('')}
-                        </ul>
-                        
-                        <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
-                            <h3 style="margin-top: 0;">Payment Instructions</h3>
-                            <p><strong>Send payment to: toastebikepolo@proton.me</strong></p>
-                            <p>Canadians can use Interac, others can use PayPal.</p>
-                            <p><strong>🚨 Don't forget to include your order code in the payment details!</strong></p>
-                        </div>
-                        
-                        <p>We'll process your order as soon as we receive your payment.</p>
-                        <p>Thanks for choosing Toasté Bike Polo!</p>
-                        <p>Best regards,<br>Germain</p>
-                    </div>
-                `
-            };
-        } else if (emailType === 'owner') {
-            console.log('=== PREPARING OWNER EMAIL ===');
-            // Owner notification email
-            subject = `New Order Received - ${orderData.orderCode}`;
-            console.log('Owner email subject:', subject);
-            console.log('Owner email to:', process.env.PROTON_EMAIL);
-            emailContent = {
-                from: 'Toasté Bike Polo <noreply@toastebikepolo.ca>',
-                to: process.env.PROTON_EMAIL,
-                subject: subject,
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <h2 style="color: #2d2218;">New Order Received!</h2>
-                        
-                        <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
-                            <h3 style="margin-top: 0;">Order Code: ${orderData.orderCode}</h3>
-                            <p><strong>Total: CAD$${orderData.total.toFixed(2)}</strong></p>
-                        </div>
-                        
-                        <h3>Customer Information:</h3>
-                        <p><strong>Name:</strong> ${orderData.customerName}</p>
-                        <p><strong>Email:</strong> ${orderData.customerEmail}</p>
-                        <p><strong>Address:</strong> ${orderData.customerAddress}</p>
-                        ${orderData.customerNotes ? `<p><strong>Notes:</strong> ${orderData.customerNotes}</p>` : ''}
-                        
-                        <h3>Order Items:</h3>
-                        <ul>
-                            ${orderData.products.map(product => 
-                                `<li>${product.quantity}x ${product.spokeCount} spokes, ${product.wheelSize} - CAD$${product.price.toFixed(2)}</li>`
-                            ).join('')}
-                        </ul>
-                        
-                        <p>Order placed on: ${new Date().toLocaleString()}</p>
-                    </div>
-                `
-            };
-        } else {
-            console.log('❌ Invalid email type:', emailType);
-            throw new Error('Invalid email type');
-        }
+        console.log('=== PREPARING EMAIL CONTENT ===');
+        console.log('Email type:', emailType);
+        console.log('Language:', orderData.language || 'en');
+        
+        const emailContent = getEmailContent(orderData, emailType, orderData.language);
+        console.log('Email subject:', emailContent.subject);
+        console.log('Email to:', emailContent.to);
 
         console.log('=== SENDING EMAIL VIA RESEND API ===');
         console.log('Email content prepared:', {

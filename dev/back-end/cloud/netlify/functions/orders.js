@@ -85,7 +85,8 @@ exports.handler = async (event, context) => {
         customerName,
         customerEmail,
         shippingAddress,
-        notes
+        notes,
+        language = 'en' // Default to English if not provided
       } = body;
 
       // Validate required fields
@@ -242,6 +243,7 @@ exports.handler = async (event, context) => {
           customerEmail: customerEmail,
           customerAddress: shippingAddress,
           customerNotes: notes || '',
+          language: language,
           products: productDetails.map(product => ({
             quantity: product.quantity,
             spokeCount: product.spokeCount,

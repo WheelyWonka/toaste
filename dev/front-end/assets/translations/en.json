@@ -54,7 +54,8 @@
     "orderDetails": "Your order",
     "total": "Total: $",
     "back": "← Back to your info",
-    "submit": "Let's do this! →"
+    "submit": "Place the order! →",
+    "submitting": "Submitting Order..."
   },
   "confirmation": {
     "title": "You're all set!",

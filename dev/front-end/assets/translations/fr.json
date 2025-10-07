@@ -54,7 +54,8 @@
     "orderDetails": "Ta commande",
     "total": "Total\u00A0: $",
     "back": "← Retour aux infos",
-    "submit": "C'est parti\u00A0!\u00A0→"
+    "submit": "Passer la commande\u00A0!\u00A0→",
+    "submitting": "Envoi de ta commande..."
   },
   "confirmation": {
     "title": "C'est bon\u00A0!",

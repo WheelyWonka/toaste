@@ -1110,7 +1110,7 @@ document.querySelector('#order-review .submit-btn').addEventListener('click', as
         // Show loading state
         const submitBtn = document.querySelector('#order-review .submit-btn');
         const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Submitting Order...';
+        submitBtn.textContent = i18n.t('review.submitting');
         submitBtn.disabled = true;
         submitBtn.style.opacity = '0.6';
 

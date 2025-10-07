@@ -67,18 +67,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Add mouse move event listener for desktop
         document.addEventListener('mousemove', moveEyes);
 
-        // Add touch support for mobile (only on logo area)
-        const logoContainer = document.querySelector('.logo-container');
-        if (logoContainer) {
-            logoContainer.addEventListener('touchmove', (e) => {
-                // Only prevent default if touching the logo area
-                const touch = e.touches[0];
-                moveEyes({
-                    clientX: touch.clientX,
-                    clientY: touch.clientY
-                });
-            }, { passive: true });
-        }
+        // Add touch support for mobile (on entire document to catch all touches)
+        document.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            moveEyes({
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+        }, { passive: true });
+
+        document.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            moveEyes({
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+        }, { passive: true });
 
 
     } catch (error) {

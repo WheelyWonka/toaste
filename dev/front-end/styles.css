@@ -514,6 +514,9 @@ input:hover, select:hover, textarea:hover {
 }
 
 #game-lives {
+    position: absolute;
+    top: 0px;
+    right: 20px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -1996,3 +1999,19 @@ input:hover, select:hover, textarea:hover {
 
 
 /* Instagram section now uses consistent styling for both desktop and mobile */ 
+
+/* sound toggle in game UI */
+#game-ui .sound-toggle {
+	position: absolute;
+	top: 0px;
+	left: 20px;
+	background: transparent;
+	border: none;
+	padding: 6px;
+	cursor: pointer;
+	border-radius: 6px;
+	transition: transform 120ms ease;
+}
+#game-ui .sound-toggle:active { transform: scale(0.95); }
+#game-ui .sound-toggle svg { display: block; }
+#game-ui .sound-toggle.muted #sound-waves { opacity: 0.25; } 

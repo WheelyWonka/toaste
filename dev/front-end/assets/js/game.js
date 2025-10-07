@@ -46,6 +46,8 @@ class ToasterGame {
         this.rafId = null;
         this.countdownIntervalId = null;
         this.countdownTimeoutId = null;
+        // Sound mute state persisted across sessions
+        this.isMuted = localStorage.getItem('toaste_game_muted') === 'true';
         this.init();
     }
     
@@ -150,6 +152,34 @@ class ToasterGame {
         document.getElementById('exit-game').addEventListener('click', () => {
             this.exitGame();
         });
+        
+        // Sound toggle button
+        const soundToggle = document.getElementById('sound-toggle');
+        if (soundToggle) {
+            this.updateSoundToggleUI();
+            soundToggle.addEventListener('click', () => {
+                this.isMuted = !this.isMuted;
+                localStorage.setItem('toaste_game_muted', String(this.isMuted));
+                this.updateSoundToggleUI();
+                if (this.isMuted && this.readyAudio) {
+                    try { this.readyAudio.pause(); } catch {}
+                }
+            });
+        }
+    }
+    
+    updateSoundToggleUI() {
+        const btn = document.getElementById('sound-toggle');
+        if (!btn) return;
+        if (this.isMuted) {
+            btn.classList.add('muted');
+            btn.setAttribute('aria-label', 'Sound off');
+            btn.title = 'Sound off';
+        } else {
+            btn.classList.remove('muted');
+            btn.setAttribute('aria-label', 'Sound on');
+            btn.title = 'Sound on';
+        }
     }
     
     setupGameUI() {
@@ -179,6 +209,9 @@ class ToasterGame {
         this.clearTimers();
         countdownScreen.style.display = 'flex';
         countdownNumber.textContent = '3';
+        
+        // Start READY sound aligned with the 3-2-1 cadence
+        this.playReadySound();
         
         let count = 3;
         const countdownInterval = setInterval(() => {
@@ -462,6 +495,9 @@ class ToasterGame {
                 // Trigger bump animation
                 this.toaster.bumpDuration = this.toaster.maxBumpDuration;
                 
+                // Play throw sound
+                this.playRandomHitSound();
+                
                 this.toasts.push({
                     x: this.toaster.x + this.toaster.width / 2 - 12, // Center the toast
                     y: this.toaster.y,
@@ -501,6 +537,63 @@ class ToasterGame {
         }
     }
     
+    playRandomHitSound() {
+        if (this.isMuted) return;
+        try {
+            const idx = Math.floor(Math.random() * 3) + 1; // 1-3
+            const audio = new Audio(`/assets/sounds/hit-0${idx}.mp3`);
+            audio.volume = 0.45;
+            audio.playbackRate = 0.95 + Math.random() * 0.1;
+            audio.play().catch(() => {});
+        } catch {}
+    }
+
+    playRandomBangSound() {
+        if (this.isMuted) return;
+        try {
+            const idx = Math.floor(Math.random() * 2) + 1; // 1-2
+            const audio = new Audio(`/assets/sounds/bang-0${idx}.mp3`);
+            audio.volume = 0.4;
+            audio.playbackRate = 0.95 + Math.random() * 0.1;
+            audio.play().catch(() => {});
+        } catch {}
+    }
+
+    playRandomPunchSound() {
+        if (this.isMuted) return;
+        try {
+            const idx = Math.floor(Math.random() * 2) + 1; // 1-2
+            const audio = new Audio(`/assets/sounds/punch-0${idx}.mp3`);
+            audio.volume = 0.35;
+            audio.playbackRate = 0.95 + Math.random() * 0.1;
+            audio.play().catch(() => {});
+        } catch {}
+    }
+
+    playReadySound() {
+        if (this.isMuted) return;
+        try {
+            if (this.readyAudio) {
+                this.readyAudio.pause();
+                this.readyAudio = null;
+            }
+            const audio = new Audio(`/assets/sounds/ready.mp3`);
+            audio.volume = 0.25;
+            audio.currentTime = 2.6;
+            audio.play().catch(() => {});
+            this.readyAudio = audio;
+        } catch {}
+    }
+
+    playGameOverSound() {
+        if (this.isMuted) return;
+        try {
+            const audio = new Audio(`/assets/sounds/awww.mp3`);
+            audio.volume = 0.35;
+            audio.play().catch(() => {});
+        } catch {}
+    }
+
     checkCollisions() {
         // Check toaster vs rain balls
         if (this.toaster) {
@@ -509,6 +602,7 @@ class ToasterGame {
                 if (this.circleRectCollision(ball, this.toaster)) {
                     this.lives--;
                     this.createParticles(ball.x, ball.y, ball.color);
+                    this.playRandomPunchSound();
                     this.rainBalls.splice(i, 1);
                     
                     // Trigger screen flash
@@ -542,6 +636,7 @@ class ToasterGame {
                 const ball = this.rainBalls[j];
                 if (this.circleRectCollision(ball, toast)) {
                     this.createParticles(ball.x, ball.y, ball.color);
+                    this.playRandomBangSound();
                     this.toasts.splice(i, 1);
                     this.rainBalls.splice(j, 1);
                     break;
@@ -714,6 +809,7 @@ class ToasterGame {
     
     
     showGameOverScreen() {
+        this.playGameOverSound();
         document.getElementById('final-score').textContent = this.score;
         document.getElementById('game-over-screen').classList.remove('hidden');
     }

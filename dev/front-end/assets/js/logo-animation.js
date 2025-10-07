@@ -102,7 +102,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }, { passive: true });
 
-        // Toast projectile from logo toward 3D cover
+        // Simple sound helper (random hit)
+        function playRandomHit() {
+            try {
+                const idx = Math.floor(Math.random() * 3) + 1; // 1-3
+                const audio = new Audio(`/assets/sounds/hit-0${idx}.mp3`);
+                audio.volume = 0.5;
+                audio.playbackRate = 0.95 + Math.random() * 0.1; // slight pitch variation
+                audio.play().catch(() => {});
+            } catch {}
+        }
+
+        // Toast projectile from logo toward left/right
         function getElementCenterRect(el) {
             const r = el.getBoundingClientRect();
             return {
@@ -117,7 +128,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const modelContainer = document.getElementById('model-container');
             if (!modelContainer) return;
 
-            // Compute start (logo center) and end (3D cover center)
+            // Play throw sound
+            playRandomHit();
+
+            // Compute start (logo center)
             const logoRect = getElementCenterRect(document.querySelector('.logo-container'));
 
             const start = { x: logoRect.x, y: logoRect.y };

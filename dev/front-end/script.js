@@ -189,6 +189,12 @@ function formatWheelSize(wheelSize) {
     return wheelSize;
 }
 
+// Get spoke/rayon text based on current language
+function getSpokeText() {
+    const currentLang = localStorage.getItem('language') || navigator.language.split('-')[0];
+    return currentLang === 'fr' ? 'rayons' : 'spokes';
+}
+
 // Calculate price for a product
 function calculateProductPrice(product) {
     return PRICING.basePrice * product.quantity;
@@ -248,7 +254,7 @@ function updateCartDisplay() {
         cartItem.innerHTML = `
             <div class="cart-item-info">
                 <div class="cart-item-quantity">${product.quantity}x</div>
-                <div class="cart-item-details">${product.spokeCount} ${i18n.t('cart.itemFormat')}, ${formatWheelSize(product.wheelSize)}</div>
+                <div class="cart-item-details">${product.spokeCount} ${getSpokeText()}, ${formatWheelSize(product.wheelSize)}</div>
             </div>
             <div class="cart-item-price">CAD$${calculateProductPrice(product).toFixed(2)}</div>
             <button type="button" class="remove-item-btn" onclick="removeFromCart(${index})">×</button>
@@ -1061,7 +1067,7 @@ function updateReviewDisplay() {
         orderItem.className = 'review-order-item';
         orderItem.innerHTML = `
             <div>
-                <strong>${product.quantity}x</strong> ${product.spokeCount} ${i18n.t('cart.itemFormat')}, ${formatWheelSize(product.wheelSize)}
+                <strong>${product.quantity}x</strong> ${product.spokeCount} ${getSpokeText()}, ${formatWheelSize(product.wheelSize)}
             </div>
             <div>CAD$${calculateProductPrice(product).toFixed(2)}</div>
         `;
@@ -1202,4 +1208,11 @@ window.showConfirmationDebug = function() {
 document.addEventListener('DOMContentLoaded', () => {
     loadCartFromStorage();
     loadContactInfoFromStorage();
+    
+    // Listen for language changes to update cart display
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'language') {
+            updateCartDisplay();
+        }
+    });
 }); 

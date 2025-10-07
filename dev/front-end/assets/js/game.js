@@ -164,11 +164,41 @@ class ToasterGame {
     }
     
     startGame() {
+        this.showCountdown();
+    }
+    
+    showCountdown() {
+        const countdownScreen = document.getElementById('countdown-screen');
+        const countdownNumber = document.getElementById('countdown-number');
+        
+        countdownScreen.style.display = 'flex';
+        countdownNumber.textContent = '3';
+        
+        let count = 3;
+        const countdownInterval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                countdownNumber.textContent = count;
+            } else {
+                clearInterval(countdownInterval);
+                countdownNumber.textContent = 'POLO!';
+                
+                // Wait a bit longer for "POLO!" then start the game
+                setTimeout(() => {
+                    countdownScreen.style.display = 'none';
+                    this.startGameplay();
+                }, 800);
+            }
+        }, 1000);
+    }
+    
+    startGameplay() {
         this.gameRunning = true;
         this.gameStartTime = Date.now();
         this.score = 0;
         this.lives = this.maxLives;
         this.rainSpawnRate = this.baseRainSpawnRate; // Reset spawn rate
+        this.rainStartTime = Date.now() + 2000; // Start rain after 2 seconds
         
         // Initialize toaster
         this.toaster = {
@@ -181,6 +211,13 @@ class ToasterGame {
             bumpScale: 1.0,
             bumpDuration: 0,
             maxBumpDuration: 10, // frames
+            opacity: 0, // Start invisible
+            // Death animation properties
+            isDead: false,
+            deathBounce: 0,
+            deathVelocity: { x: 0, y: -8 }, // Initial upward velocity
+            deathRotation: 0,
+            deathRotationSpeed: 0.1,
             // Removed bounce and rotation - keeping only inflation
         };
         
@@ -189,12 +226,29 @@ class ToasterGame {
         this.rainBalls = [];
         this.particles = [];
         
+        // Initialize screen flash
+        this.screenFlash = {
+            active: false,
+            duration: 0,
+            maxDuration: 120, // 120ms flash - longer and more brutal
+            flashCount: 0,
+            maxFlashes: 1, // Normal hit = 1 flash
+            isGameOver: false,
+            flashDelay: 0,
+            maxFlashDelay: 150 // 150ms delay between flashes
+        };
+        
+        // Fade in UI
+        const gameUI = document.getElementById('game-ui');
+        gameUI.classList.add('fade-in');
+        
         this.updateUI();
         this.gameLoop();
     }
     
     gameLoop() {
-        if (!this.gameRunning) return;
+        // Continue game loop if game is running OR if flash sequence is active OR if toaster is dying
+        if (!this.gameRunning && !this.screenFlash.active && !(this.toaster && this.toaster.isDead)) return;
         
         this.update();
         this.render();
@@ -203,32 +257,85 @@ class ToasterGame {
     }
     
     update() {
-        const currentTime = Date.now();
-        this.score = Math.floor((currentTime - this.gameStartTime) / 1000);
+        // Always update screen flash (even when game is stopped)
+        this.updateScreenFlash();
         
-        // Increase difficulty over time
-        this.rainSpawnRate = this.baseRainSpawnRate + (this.score * this.difficultyIncreaseRate);
-        
+        // Always update toaster (for death animation even when game is stopped)
         this.updateToaster();
-        this.updateToasts();
-        this.updateRainBalls();
-        this.updateParticles();
-        this.checkCollisions();
-        this.spawnRainBalls();
         
-        if (this.isShooting) {
-            this.spawnToasts();
-        }
-        
-        this.updateUI();
-        
-        if (this.lives <= 0) {
-            this.gameOver();
+        // Only update other game elements if game is running
+        if (this.gameRunning) {
+            const currentTime = Date.now();
+            this.score = Math.floor((currentTime - this.gameStartTime) / 1000);
+            
+            // Increase difficulty over time
+            this.rainSpawnRate = this.baseRainSpawnRate + (this.score * this.difficultyIncreaseRate);
+            
+            this.updateToasts();
+            this.updateRainBalls();
+            this.updateParticles();
+            this.checkCollisions();
+            this.spawnRainBalls();
+            
+            if (this.isShooting) {
+                this.spawnToasts();
+            }
+            
+            this.updateUI();
         }
     }
     
     updateToaster() {
         if (!this.toaster) return;
+        
+        // Handle death animation
+        if (this.toaster.isDead) {
+            // Apply gravity
+            this.toaster.deathVelocity.y += 0.3;
+            
+            // Update position
+            this.toaster.x += this.toaster.deathVelocity.x;
+            this.toaster.y += this.toaster.deathVelocity.y;
+            
+            // Update rotation
+            this.toaster.deathRotation += this.toaster.deathRotationSpeed;
+            
+            // Bounce when hitting the ground (only for first few bounces)
+            if (this.toaster.y >= this.canvas.height - this.toaster.height && this.toaster.deathBounce <= 2) {
+                this.toaster.y = this.canvas.height - this.toaster.height;
+                this.toaster.deathVelocity.y *= -0.6; // Bounce with energy loss
+                this.toaster.deathBounce++;
+                
+                // Add some horizontal movement on bounce
+                this.toaster.deathVelocity.x += (Math.random() - 0.5) * 2;
+            }
+            
+            // After 2 bounces, let it fall through the ground
+            if (this.toaster.deathBounce > 2) {
+                this.toaster.deathVelocity.y = Math.abs(this.toaster.deathVelocity.y); // Always fall down
+                this.toaster.deathVelocity.x = 0; // Stop horizontal movement
+                // Don't constrain Y position - let it fall through the ground
+            }
+            
+            // Fade out as it falls
+            if (this.toaster.y > this.canvas.height + 100) {
+                this.toaster.opacity = Math.max(0, this.toaster.opacity - 0.02);
+            }
+            
+            return; // Skip normal toaster behavior when dead
+        }
+        
+        // Handle fade-in effect (only when not dead)
+        const currentTime = Date.now();
+        const fadeStartTime = this.gameStartTime;
+        const fadeDuration = 1000; // 1 second fade-in
+        
+        if (currentTime - fadeStartTime < fadeDuration) {
+            const fadeProgress = (currentTime - fadeStartTime) / fadeDuration;
+            this.toaster.opacity = Math.min(1, fadeProgress);
+        } else {
+            this.toaster.opacity = 1;
+        }
         
         // Handle bump animation
         if (this.toaster.bumpDuration > 0) {
@@ -239,8 +346,6 @@ class ToasterGame {
         } else {
             this.toaster.bumpScale = 1.0;
         }
-        
-        // Removed bounce and rotation animation - keeping only inflation
         
         // Move toaster left and right
         this.toaster.x += this.toaster.direction * this.toaster.speed;
@@ -298,6 +403,43 @@ class ToasterGame {
         }
     }
     
+    updateScreenFlash() {
+        if (this.screenFlash.active) {
+            // If we're in a delay between flashes
+            if (this.screenFlash.flashDelay > 0) {
+                this.screenFlash.flashDelay += 16; // 16ms per frame
+                if (this.screenFlash.flashDelay >= this.screenFlash.maxFlashDelay) {
+                    this.screenFlash.flashDelay = 0;
+                    this.screenFlash.duration = 0; // Start next flash
+                }
+                return;
+            }
+            
+            // Flash is active
+            this.screenFlash.duration += 16; // Assuming ~60fps, 16ms per frame
+            
+            if (this.screenFlash.duration >= this.screenFlash.maxDuration) {
+                this.screenFlash.flashCount++;
+                
+                if (this.screenFlash.flashCount >= this.screenFlash.maxFlashes) {
+                    this.screenFlash.active = false;
+                    this.screenFlash.duration = 0;
+                    this.screenFlash.flashCount = 0;
+                    this.screenFlash.flashDelay = 0;
+                    
+                    // If this was a game over sequence, show game over screen
+                    if (this.screenFlash.isGameOver) {
+                        this.screenFlash.isGameOver = false;
+                        this.showGameOverScreen();
+                    }
+                } else {
+                    // Start delay before next flash
+                    this.screenFlash.flashDelay = 16; // Start delay
+                }
+            }
+        }
+    }
+    
     spawnToasts() {
         if (this.isShooting && this.toaster && !this.hasShotThisClick) {
             const currentTime = Date.now();
@@ -325,6 +467,12 @@ class ToasterGame {
     }
     
     spawnRainBalls() {
+        // Don't spawn rain balls until 2 seconds have passed
+        const currentTime = Date.now();
+        if (currentTime < this.rainStartTime) {
+            return;
+        }
+        
         if (Math.random() < this.rainSpawnRate) {
             const colorData = this.rainColors[Math.floor(Math.random() * this.rainColors.length)];
             this.rainBalls.push({
@@ -349,6 +497,27 @@ class ToasterGame {
                     this.lives--;
                     this.createParticles(ball.x, ball.y, ball.color);
                     this.rainBalls.splice(i, 1);
+                    
+                    // Trigger screen flash
+                    this.screenFlash.active = true;
+                    this.screenFlash.duration = 0;
+                    this.screenFlash.flashCount = 0;
+                    this.screenFlash.flashDelay = 0;
+                    
+                    // If game over, trigger death animation and 5-flash sequence
+                    if (this.lives <= 0) {
+                        this.toaster.isDead = true;
+                        this.toaster.deathVelocity.x = (Math.random() - 0.5) * 4; // Random horizontal velocity
+                        this.toaster.deathVelocity.y = -8; // Upward velocity
+                        this.toaster.deathRotationSpeed = (Math.random() - 0.5) * 0.2; // Random rotation speed
+                        
+                        this.screenFlash.maxFlashes = 5;
+                        this.screenFlash.isGameOver = true;
+                        this.gameRunning = false; // Stop the game immediately
+                    } else {
+                        this.screenFlash.maxFlashes = 1; // Normal hit
+                        this.screenFlash.isGameOver = false;
+                    }
                 }
             }
         }
@@ -400,14 +569,24 @@ class ToasterGame {
         if (this.toaster) {
             this.ctx.save();
             
+            // Apply opacity for fade-in effect
+            this.ctx.globalAlpha = this.toaster.opacity || 1;
+            
+            // Apply death rotation if dead
+            if (this.toaster.isDead) {
+                this.ctx.translate(this.toaster.x + this.toaster.width / 2, this.toaster.y + this.toaster.height / 2);
+                this.ctx.rotate(this.toaster.deathRotation);
+                this.ctx.translate(-this.toaster.width / 2, -this.toaster.height / 2);
+            }
+            
             // Apply bump scaling
             const scaledWidth = this.toaster.width * this.toaster.bumpScale;
             const scaledHeight = this.toaster.height * this.toaster.bumpScale;
             const offsetX = (this.toaster.width - scaledWidth) / 2;
             const offsetY = (this.toaster.height - scaledHeight) / 2;
             
-            const finalX = this.toaster.x + offsetX;
-            const finalY = this.toaster.y + offsetY;
+            const finalX = this.toaster.isDead ? offsetX : this.toaster.x + offsetX;
+            const finalY = this.toaster.isDead ? offsetY : this.toaster.y + offsetY;
             
             if (this.toasterImage.complete) {
                 this.ctx.drawImage(this.toasterImage, finalX, finalY, scaledWidth, scaledHeight);
@@ -482,6 +661,26 @@ class ToasterGame {
             this.ctx.lineTo(this.mousePos.x, this.mousePos.y + 10);
             this.ctx.stroke();
         }
+        
+        // Draw screen flash
+        if (this.screenFlash.active) {
+            let flashAlpha = 0;
+            
+            // If we're in a delay between flashes, show no flash
+            if (this.screenFlash.flashDelay > 0) {
+                flashAlpha = 0;
+            } else {
+                // Flash is active, calculate alpha
+                const flashProgress = this.screenFlash.duration / this.screenFlash.maxDuration;
+                flashAlpha = Math.sin(flashProgress * Math.PI); // Fade in and out smoothly
+            }
+            
+            this.ctx.save();
+            this.ctx.globalAlpha = flashAlpha * 0.95; // 95% opacity max - more brutal
+            this.ctx.fillStyle = '#FFFFFF';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.restore();
+        }
     }
     
     updateUI() {
@@ -500,14 +699,32 @@ class ToasterGame {
         });
     }
     
-    gameOver() {
-        this.gameRunning = false;
+    
+    showGameOverScreen() {
         document.getElementById('final-score').textContent = this.score;
         document.getElementById('game-over-screen').classList.remove('hidden');
     }
     
+    gameOver() {
+        // This method is now handled by triggerGameOverSequence
+        // Keep it for compatibility but it shouldn't be called directly
+    }
+    
     restartGame() {
         document.getElementById('game-over-screen').classList.add('hidden');
+        
+        // Reset toaster to alive state
+        if (this.toaster) {
+            this.toaster.isDead = false;
+            this.toaster.x = this.canvas.width / 2;
+            this.toaster.y = this.canvas.height - 70;
+            this.toaster.deathBounce = 0;
+            this.toaster.deathVelocity = { x: 0, y: -8 };
+            this.toaster.deathRotation = 0;
+            this.toaster.deathRotationSpeed = 0.1;
+            this.toaster.opacity = 0; // Will fade in during startGameplay
+        }
+        
         this.startGame();
     }
     

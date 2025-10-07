@@ -82,35 +82,10 @@ function getEmailContent(orderData, emailType, language = 'en') {
             html: html
         };
     } else if (emailType === 'owner') {
-        const subject = isFrench 
-            ? `Nouvelle commande reçue - ${orderData.orderCode}`
-            : `New Order Received - ${orderData.orderCode}`;
+        // Owner emails are always in English for internal use
+        const subject = `New Order Received - ${orderData.orderCode}`;
             
-        const html = isFrench ? `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #2d2218;">Nouvelle commande reçue !</h2>
-                
-                <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
-                    <h3 style="margin-top: 0;">Code de commande : ${orderData.orderCode}</h3>
-                    <p><strong>Total : CAD$${orderData.total.toFixed(2)}</strong></p>
-                </div>
-                
-                <h3>Informations client :</h3>
-                <p><strong>Nom :</strong> ${orderData.customerName}</p>
-                <p><strong>Email :</strong> ${orderData.customerEmail}</p>
-                <p><strong>Adresse :</strong> ${orderData.customerAddress}</p>
-                ${orderData.customerNotes ? `<p><strong>Notes :</strong> ${orderData.customerNotes}</p>` : ''}
-                
-                <h3>Articles commandés :</h3>
-                <ul>
-                    ${orderData.products.map(product => 
-                        `<li>${product.quantity}x ${product.spokeCount} rayons, ${product.wheelSize}" - CAD$${product.price.toFixed(2)}</li>`
-                    ).join('')}
-                </ul>
-                
-                <p>Commande passée le : ${new Date().toLocaleString()}</p>
-            </div>
-        ` : `
+        const html = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                 <h2 style="color: #2d2218;">New Order Received!</h2>
                 

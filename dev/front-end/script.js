@@ -1,6 +1,6 @@
 // API Configuration (dynamically set based on domain)
 const API_CONFIG = {
-    baseUrl: window.TOASTE_CONFIG?.apiBaseUrl || 'https://api.toastebikepolo.ca/.netlify/functions'
+    baseUrl: window.TOASTE_CONFIG?.apiBaseUrl || 'https://rest.toastebikepolo.ca/.netlify/functions'
 };
 
 // Form elements

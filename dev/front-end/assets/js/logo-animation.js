@@ -3,7 +3,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const response = await fetch('/assets/graphics/logo.svg');
         const svgContent = await response.text();
-        document.querySelector('.logo-container').innerHTML = svgContent;
+        
+        // Wrap the SVG in a clickable link to home
+        const logoLink = document.createElement('a');
+        logoLink.href = '/';
+        logoLink.style.textDecoration = 'none';
+        logoLink.style.display = 'block';
+        logoLink.innerHTML = svgContent;
+        
+        document.querySelector('.logo-container').appendChild(logoLink);
 
         // Now that the SVG is loaded, we can select its elements
         const eyeLeft = document.querySelector('#eye-left');

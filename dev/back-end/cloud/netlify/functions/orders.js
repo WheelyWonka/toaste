@@ -1,4 +1,5 @@
 const Airtable = require('airtable');
+const { withCors, createCorsResponse } = require('./cors');
 
 // Initialize Airtable (moved inside handler to avoid issues with OPTIONS requests)
 function getAirtableBase() {
@@ -38,44 +39,8 @@ function calculatePricing(quantity) {
   };
 }
 
-// Handle CORS preflight
-function handleCORS(event) {
-  const headers = {
-    'Access-Control-Allow-Origin': 'https://preprod.toastebikepolo.ca',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Max-Age': '86400'
-  };
-
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers,
-      body: ''
-    };
-  }
-
-  return headers;
-}
-
-exports.handler = async (event, context) => {
-  // Handle CORS preflight first (before any other processing)
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': 'https://preprod.toastebikepolo.ca',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Max-Age': '86400'
-      },
-      body: ''
-    };
-  }
-
-  // Handle CORS for other methods
-  const corsHeaders = handleCORS(event);
-
+// Main orders handler
+async function ordersHandler(event, context) {
   try {
     if (event.httpMethod === 'POST') {
       // Create new order
@@ -92,64 +57,44 @@ exports.handler = async (event, context) => {
 
       // Validate required fields
       if (!products || !Array.isArray(products) || products.length === 0 || !customerName || !customerEmail || !shippingAddress) {
-        return {
-          statusCode: 400,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            error: 'Missing required fields',
-            required: ['products', 'customerName', 'customerEmail', 'shippingAddress']
-          })
-        };
+        return createCorsResponse(400, event, {
+          error: 'Missing required fields',
+          required: ['products', 'customerName', 'customerEmail', 'shippingAddress']
+        });
       }
 
       // Validate each product
       for (let i = 0; i < products.length; i++) {
         const product = products[i];
         if (!product.spokeCount || !product.wheelSize || !product.quantity) {
-          return {
-            statusCode: 400,
-            headers: corsHeaders,
-            body: JSON.stringify({
-              error: `Product ${i + 1} is missing required fields`,
-              required: ['spokeCount', 'wheelSize', 'quantity']
-            })
-          };
+          return createCorsResponse(400, event, {
+            error: `Product ${i + 1} is missing required fields`,
+            required: ['spokeCount', 'wheelSize', 'quantity']
+          });
         }
 
         // Validate spoke count
         if (!['32', '36'].includes(product.spokeCount.toString())) {
-          return {
-            statusCode: 400,
-            headers: corsHeaders,
-            body: JSON.stringify({
-              error: `Product ${i + 1}: Invalid spoke count`,
-              validValues: ['32', '36']
-            })
-          };
+          return createCorsResponse(400, event, {
+            error: `Product ${i + 1}: Invalid spoke count`,
+            validValues: ['32', '36']
+          });
         }
 
         // Validate wheel size
         if (!['26', '650b', '700'].includes(product.wheelSize)) {
-          return {
-            statusCode: 400,
-            headers: corsHeaders,
-            body: JSON.stringify({
-              error: `Product ${i + 1}: Invalid wheel size`,
-              validValues: ['26', '650b', '700']
-            })
-          };
+          return createCorsResponse(400, event, {
+            error: `Product ${i + 1}: Invalid wheel size`,
+            validValues: ['26', '650b', '700']
+          });
         }
 
         // Validate quantity
         if (product.quantity < 1 || product.quantity > 10) {
-          return {
-            statusCode: 400,
-            headers: corsHeaders,
-            body: JSON.stringify({
-              error: `Product ${i + 1}: Invalid quantity`,
-              validRange: '1-10'
-            })
-          };
+          return createCorsResponse(400, event, {
+            error: `Product ${i + 1}: Invalid quantity`,
+            validRange: '1-10'
+          });
         }
       }
 
@@ -297,43 +242,35 @@ exports.handler = async (event, context) => {
       }
 
       // Return success response
-      return {
-        statusCode: 201,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          order: {
-            id: orderResult.id,
-            orderCode: orderCode,
-            customerName: customerName,
-            customerEmail: customerEmail,
-            totalPrice: totalPrice,
+      return createCorsResponse(201, event, {
+        success: true,
+        order: {
+          id: orderResult.id,
+          orderCode: orderCode,
+          customerName: customerName,
+          customerEmail: customerEmail,
+          totalPrice: totalPrice,
+          taxAmount: totalTaxAmount,
+          status: 'waiting_for_payment',
+          orderDate: new Date().toISOString().split('T')[0],
+          items: orderItems,
+          summary: {
+            totalQuantity: totalQuantity,
+            subtotal: totalSubtotal,
             taxAmount: totalTaxAmount,
-            status: 'waiting_for_payment',
-            orderDate: new Date().toISOString().split('T')[0],
-            items: orderItems,
-            summary: {
-              totalQuantity: totalQuantity,
-              subtotal: totalSubtotal,
-              taxAmount: totalTaxAmount,
-              totalPrice: totalPrice
-            }
+            totalPrice: totalPrice
           }
-        })
-      };
+        }
+      });
 
     } else if (event.httpMethod === 'GET') {
       // Get order by order code
       const { orderCode } = event.queryStringParameters || {};
 
       if (!orderCode) {
-        return {
-          statusCode: 400,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            error: 'Order code is required'
-          })
-        };
+        return createCorsResponse(400, event, {
+          error: 'Order code is required'
+        });
       }
 
       // Find order by order code
@@ -347,14 +284,10 @@ exports.handler = async (event, context) => {
       });
 
       if (orders.length === 0) {
-        return {
-          statusCode: 404,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            error: 'Order not found',
-            orderCode
-          })
-        };
+        return createCorsResponse(404, event, {
+          error: 'Order not found',
+          orderCode
+        });
       }
 
       const order = orders[0];
@@ -370,51 +303,42 @@ exports.handler = async (event, context) => {
       });
 
 
-      return {
-        statusCode: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          order: {
-            id: order.id,
-            orderCode: order.fields['Order Code'],
-            customerName: order.fields['Customer Name'],
-            customerEmail: order.fields['Customer Email'],
-            shippingAddress: order.fields['Shipping Address'],
-            notes: order.fields['Notes'],
-            orderDate: order.fields['Order Date'],
-            status: order.fields['Status'],
-            totalPrice: order.fields['Total Price CAD'],
-            taxAmount: order.fields['Tax Amount CAD'],
-            items: orderItems.map(item => ({
-              spokeCount: item.fields['Spoke Count'],
-              wheelSize: item.fields['Wheel Size'],
-              quantity: item.fields['Quantity'],
-              unitPrice: item.fields['Unit Price CAD']
-            }))
-          }
-        })
-      };
+      return createCorsResponse(200, event, {
+        success: true,
+        order: {
+          id: order.id,
+          orderCode: order.fields['Order Code'],
+          customerName: order.fields['Customer Name'],
+          customerEmail: order.fields['Customer Email'],
+          shippingAddress: order.fields['Shipping Address'],
+          notes: order.fields['Notes'],
+          orderDate: order.fields['Order Date'],
+          status: order.fields['Status'],
+          totalPrice: order.fields['Total Price CAD'],
+          taxAmount: order.fields['Tax Amount CAD'],
+          items: orderItems.map(item => ({
+            spokeCount: item.fields['Spoke Count'],
+            wheelSize: item.fields['Wheel Size'],
+            quantity: item.fields['Quantity'],
+            unitPrice: item.fields['Unit Price CAD']
+          }))
+        }
+      });
 
     } else {
-      return {
-        statusCode: 405,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          error: 'Method not allowed'
-        })
-      };
+      return createCorsResponse(405, event, {
+        error: 'Method not allowed'
+      });
     }
 
   } catch (error) {
     console.error('Error:', error);
-    return {
-      statusCode: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        error: 'Internal server error',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
-      })
-    };
+    return createCorsResponse(500, event, {
+      error: 'Internal server error',
+      message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+    });
   }
-};
+}
+
+// Export handler with CORS middleware
+exports.handler = withCors(ordersHandler);

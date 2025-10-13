@@ -1,4 +1,5 @@
 // Using Resend API for reliable serverless email sending
+const { withCors, createCorsResponse } = require('./cors');
 
 // Get email content based on language
 function getEmailContent(orderData, emailType, language = 'en') {
@@ -217,41 +218,16 @@ async function sendEmailViaProtonAPI(emailContent) {
     return { messageId: result.id };
 }
 
-exports.handler = async (event, context) => {
+// Main email handler
+async function emailHandler(event, context) {
     console.log('=== EMAIL FUNCTION CALLED ===');
     console.log('HTTP Method:', event.httpMethod);
     console.log('Headers:', JSON.stringify(event.headers, null, 2));
     console.log('Body:', event.body);
-    
-    // Handle CORS
-    const allowedOrigins = [
-        'https://preprod.toastebikepolo.ca'
-    ];
-    
-    const origin = event.headers.origin || event.headers.Origin;
-    const corsHeaders = {
-        'Access-Control-Allow-Origin': allowedOrigins.includes(origin) ? origin : allowedOrigins[0],
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Credentials': 'true'
-    };
-
-    if (event.httpMethod === 'OPTIONS') {
-        console.log('OPTIONS request - returning CORS headers');
-        return {
-            statusCode: 200,
-            headers: corsHeaders,
-            body: ''
-        };
-    }
 
     if (event.httpMethod !== 'POST') {
         console.log('Invalid HTTP method:', event.httpMethod);
-        return {
-            statusCode: 405,
-            headers: corsHeaders,
-            body: JSON.stringify({ error: 'Method not allowed' })
-        };
+        return createCorsResponse(405, event, { error: 'Method not allowed' });
     }
 
     try {
@@ -302,15 +278,11 @@ exports.handler = async (event, context) => {
             to: emailContent.to
         });
 
-        return {
-            statusCode: 200,
-            headers: corsHeaders,
-            body: JSON.stringify({ 
-                success: true, 
-                message: 'Email sent successfully via Resend API',
-                messageId: result.messageId
-            })
-        };
+        return createCorsResponse(200, event, { 
+            success: true, 
+            message: 'Email sent successfully via Resend API',
+            messageId: result.messageId
+        });
 
     } catch (error) {
         console.error('❌ ERROR SENDING EMAIL:', error);
@@ -318,14 +290,13 @@ exports.handler = async (event, context) => {
         console.error('Error message:', error.message);
         console.error('Error stack:', error.stack);
         
-        return {
-            statusCode: 500,
-            headers: corsHeaders,
-            body: JSON.stringify({ 
-                error: 'Failed to send email',
-                details: error.message,
-                errorType: error.name
-            })
-        };
+        return createCorsResponse(500, event, { 
+            error: 'Failed to send email',
+            details: error.message,
+            errorType: error.name
+        });
     }
-};
+}
+
+// Export handler with CORS middleware
+exports.handler = withCors(emailHandler);

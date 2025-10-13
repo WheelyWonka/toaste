@@ -1,24 +1,7 @@
 // ChitChats API shipping calculation
 const https = require('https');
+const { withCors, createCorsResponse } = require('./cors');
 
-// Handle CORS preflight
-function handleCORS(event) {
-  const headers = {
-    'Access-Control-Allow-Origin': 'https://preprod.toastebikepolo.ca',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Max-Age': '86400'
-  };
-
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers,
-      body: ''
-    };
-  }
-  return headers;
-}
 
 // Parse address string into components
 function parseAddress(addressString) {
@@ -142,23 +125,10 @@ function requestShippingRate(addressData, orderId = null) {
   });
 }
 
-exports.handler = async (event) => {
-  const headers = handleCORS(event);
-  
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers,
-      body: ''
-    };
-  }
-
+// Main shipping calculation handler
+async function shippingHandler(event) {
   if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: 'Method not allowed' })
-    };
+    return createCorsResponse(405, event, { error: 'Method not allowed' });
   }
 
   try {
@@ -166,11 +136,7 @@ exports.handler = async (event) => {
     const { address, orderId } = body;
 
     if (!address) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Address is required' })
-      };
+      return createCorsResponse(400, event, { error: 'Address is required' });
     }
 
     // Parse the address
@@ -179,13 +145,9 @@ exports.handler = async (event) => {
 
     // Validate required fields
     if (!addressData.street || !addressData.city || !addressData.province || !addressData.postalCode) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ 
-          error: 'Incomplete address. Please provide street, city, province, and postal code.' 
-        })
-      };
+      return createCorsResponse(400, event, { 
+        error: 'Incomplete address. Please provide street, city, province, and postal code.' 
+      });
     }
 
     // Request shipping rate from ChitChats
@@ -194,28 +156,23 @@ exports.handler = async (event) => {
     // Extract shipping cost from response
     const shippingCost = shippingResponse.postage_cost || 0;
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({
-        success: true,
-        shippingCost: parseFloat(shippingCost),
-        currency: 'CAD',
-        address: addressData,
-        service: shippingResponse.postage_description || 'Standard Shipping'
-      })
-    };
+    return createCorsResponse(200, event, {
+      success: true,
+      shippingCost: parseFloat(shippingCost),
+      currency: 'CAD',
+      address: addressData,
+      service: shippingResponse.postage_description || 'Standard Shipping'
+    });
 
   } catch (error) {
     console.error('Shipping calculation error:', error);
     
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({
-        error: 'Failed to calculate shipping cost',
-        details: error.message
-      })
-    };
+    return createCorsResponse(500, event, {
+      error: 'Failed to calculate shipping cost',
+      details: error.message
+    });
   }
-};
+}
+
+// Export handler with CORS middleware
+exports.handler = withCors(shippingHandler);

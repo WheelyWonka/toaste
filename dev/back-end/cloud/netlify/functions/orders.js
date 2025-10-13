@@ -86,7 +86,8 @@ exports.handler = async (event, context) => {
         customerEmail,
         shippingAddress,
         notes,
-        language = 'en' // Default to English if not provided
+        language = 'en', // Default to English if not provided
+        shippingFee = 0 // Default to 0 if not provided
       } = body;
 
       // Validate required fields
@@ -177,7 +178,7 @@ exports.handler = async (event, context) => {
       // Calculate final tax and total
       const taxRate = 0.15; // 15% Quebec tax
       const totalTaxAmount = totalSubtotal * taxRate;
-      const totalPrice = totalSubtotal + totalTaxAmount;
+      const totalPrice = totalSubtotal + totalTaxAmount + parseFloat(shippingFee);
 
       // Generate product summary for easy reading in Airtable
       const productSummaryLines = productDetails.map(product => 
@@ -196,6 +197,7 @@ exports.handler = async (event, context) => {
         'Status': 'waiting_for_payment',
         'Total Price CAD': totalPrice,
         'Tax Amount CAD': totalTaxAmount,
+        'Shipping Fee CAD': parseFloat(shippingFee),
         'Product Summary': productSummary
       };
 
@@ -252,6 +254,7 @@ exports.handler = async (event, context) => {
           })),
           subtotal: totalSubtotal,
           taxes: totalTaxAmount,
+          shippingFee: parseFloat(shippingFee),
           total: totalPrice
         };
         

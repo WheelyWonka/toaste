@@ -30,6 +30,26 @@ function getEmailContent(orderData, emailType, language = 'en') {
                     ).join('')}
                 </ul>
                 
+                <h3>Détail des coûts :</h3>
+                <div style="background: #f5f5f5; padding: 15px; border: 1px solid #ddd; margin: 10px 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Sous-total :</span>
+                        <span>CAD$${orderData.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Taxes (15%) :</span>
+                        <span>CAD$${orderData.taxes.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Frais de livraison :</span>
+                        <span>CAD$${orderData.shippingFee.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 1px solid #ccc; padding-top: 5px;">
+                        <span>Total :</span>
+                        <span>CAD$${orderData.total.toFixed(2)}</span>
+                    </div>
+                </div>
+                
                 <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
                     <h3 style="margin-top: 0;">Instructions de paiement</h3>
                     <p><strong>Envoie ton paiement à : toastebikepolo@proton.me</strong></p>
@@ -61,6 +81,26 @@ function getEmailContent(orderData, emailType, language = 'en') {
                         `<li>${product.quantity}x ${product.spokeCount} spokes, ${product.wheelSize}" - CAD$${product.price.toFixed(2)}</li>`
                     ).join('')}
                 </ul>
+                
+                <h3>Cost Breakdown:</h3>
+                <div style="background: #f5f5f5; padding: 15px; border: 1px solid #ddd; margin: 10px 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Subtotal:</span>
+                        <span>CAD$${orderData.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Taxes (15%):</span>
+                        <span>CAD$${orderData.taxes.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Shipping:</span>
+                        <span>CAD$${orderData.shippingFee.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 1px solid #ccc; padding-top: 5px;">
+                        <span>Total:</span>
+                        <span>CAD$${orderData.total.toFixed(2)}</span>
+                    </div>
+                </div>
                 
                 <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
                     <h3 style="margin-top: 0;">Payment Instructions</h3>
@@ -106,6 +146,26 @@ function getEmailContent(orderData, emailType, language = 'en') {
                         `<li>${product.quantity}x ${product.spokeCount} spokes, ${product.wheelSize}" - CAD$${product.price.toFixed(2)}</li>`
                     ).join('')}
                 </ul>
+                
+                <h3>Cost Breakdown:</h3>
+                <div style="background: #f5f5f5; padding: 15px; border: 1px solid #ddd; margin: 10px 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Subtotal:</span>
+                        <span>CAD$${orderData.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Taxes (15%):</span>
+                        <span>CAD$${orderData.taxes.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Shipping:</span>
+                        <span>CAD$${orderData.shippingFee.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 1px solid #ccc; padding-top: 5px;">
+                        <span>Total:</span>
+                        <span>CAD$${orderData.total.toFixed(2)}</span>
+                    </div>
+                </div>
                 
                 <p>Order placed on: ${new Date().toLocaleString()}</p>
             </div>

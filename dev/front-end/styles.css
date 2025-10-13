@@ -1459,6 +1459,38 @@ input:hover, select:hover, textarea:hover {
     border-top: 1px solid var(--text-color);
 }
 
+/* Shipping loader styles */
+.shipping-loader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.loader {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--text-color);
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loader-text {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    opacity: 0.8;
+}
+
+.shipping-error {
+    color: #ff6b6b;
+    font-size: 0.9rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 /* Mobile adjustments for cart and review */
 @media (max-width: 768px) {
     .cart-summary, .review-content {

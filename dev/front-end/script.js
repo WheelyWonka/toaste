@@ -263,7 +263,7 @@ function calculateCartSubtotal(products) {
 }
 
 // Calculate total price with pair discount and taxes (for step 3)
-function calculateTotalPrice(products) {
+function calculateTotalPrice(products, shippingFee = 0) {
     // Calculate base subtotal (no discount)
     const baseSubtotal = products.reduce((sum, product) => sum + calculateProductPrice(product), 0);
     
@@ -279,16 +279,69 @@ function calculateTotalPrice(products) {
     
     // Add Quebec taxes (15%)
     const taxes = subtotal * PRICING.taxRate;
-    const total = subtotal + taxes;
+    const total = subtotal + taxes + shippingFee;
     
     return {
         subtotal: subtotal,
         taxes: taxes,
+        shippingFee: shippingFee,
         total: total,
         baseSubtotal: baseSubtotal,
         discountAmount: baseSubtotal - subtotal,
         pairsCount: pairsCount
     };
+}
+
+// Calculate shipping fee using ChitChats API
+async function calculateShippingFee() {
+    const address = document.getElementById('address').value;
+    if (!address) {
+        updateShippingDisplay(0, 'Address required');
+        return;
+    }
+
+    // Generate a temporary order ID for shipping calculation
+    const tempOrderId = 'TEMP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+
+    try {
+        const response = await fetch(`${API_CONFIG.baseUrl}/shipping`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ address, orderId: tempOrderId })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            updateShippingDisplay(result.shippingCost, null);
+            updateTotalWithShipping(result.shippingCost);
+        } else {
+            updateShippingDisplay(0, result.error || 'Failed to calculate shipping');
+        }
+    } catch (error) {
+        console.error('Shipping calculation error:', error);
+        updateShippingDisplay(0, 'Shipping calculation failed');
+    }
+}
+
+// Update shipping display
+function updateShippingDisplay(shippingCost, error) {
+    const shippingPriceElement = document.getElementById('shipping-fee-price');
+    if (!shippingPriceElement) return;
+
+    if (error) {
+        shippingPriceElement.innerHTML = `<span class="shipping-error">${error}</span>`;
+    } else {
+        shippingPriceElement.innerHTML = `CAD$${shippingCost.toFixed(2)}`;
+    }
+}
+
+// Update total price with shipping
+function updateTotalWithShipping(shippingCost) {
+    const pricing = calculateTotalPrice(selectedProducts, shippingCost);
+    reviewTotalPrice.textContent = pricing.total.toFixed(2);
 }
 
 // Update cart display
@@ -1167,19 +1220,47 @@ function updateReviewDisplay() {
     `;
     reviewOrderItems.appendChild(taxItem);
     
-    // Total
+    // Shipping Fee
+    const shippingItem = document.createElement('div');
+    shippingItem.className = 'review-order-item';
+    shippingItem.id = 'shipping-fee-item';
+    shippingItem.innerHTML = `
+        <div><strong>Shipping</strong></div>
+        <div id="shipping-fee-price" class="shipping-loader">
+            <span class="loader"></span>
+            <span class="loader-text">Calculating...</span>
+        </div>
+    `;
+    reviewOrderItems.appendChild(shippingItem);
+    
+    // Calculate shipping fee
+    calculateShippingFee();
+    
+    // Total (will be updated after shipping calculation)
     reviewTotalPrice.textContent = pricing.total.toFixed(2);
 }
 
 // Handle final order submission
 document.querySelector('#order-review .submit-btn').addEventListener('click', async () => {
+    // Get current shipping fee
+    const shippingFeeElement = document.getElementById('shipping-fee-price');
+    let shippingFee = 0;
+    if (shippingFeeElement && !shippingFeeElement.querySelector('.loader')) {
+        const shippingText = shippingFeeElement.textContent;
+        const match = shippingText.match(/CAD\$(\d+\.?\d*)/);
+        if (match) {
+            shippingFee = parseFloat(match[1]);
+        }
+    }
+
     const formData = {
         products: selectedProducts,
         customerName: document.getElementById('name').value,
         customerEmail: document.getElementById('email').value,
         shippingAddress: document.getElementById('address').value,
         notes: document.getElementById('notes').value,
-        language: localStorage.getItem('language') || navigator.language.split('-')[0]
+        language: localStorage.getItem('language') || navigator.language.split('-')[0],
+        shippingFee: shippingFee
     };
 
     try {

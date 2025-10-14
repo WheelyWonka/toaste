@@ -63,12 +63,19 @@ h1, h2 {
     width: 300px;
     margin: 0 auto;
     padding-left: 0.5rem;
+    cursor: pointer;
 }
 
 .logo-container svg {
     width: 100%;
     height: auto;
     transition: transform 0.3s ease;
+    overflow: visible;
+}
+
+/* Hide closed eyes by default */
+.logo-container #eyes-closed {
+    display: none;
 }
 
 /* Add styles for eye movement */

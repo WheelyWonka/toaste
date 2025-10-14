@@ -31,11 +31,11 @@ class ToasterGame {
         this.minShotInterval = 200; // Minimum milliseconds between shots
         this.hasShotThisClick = false; // Track if we've already shot for this click
         
-        // Colors for rain balls - fluorescent colors with labels
+        // Colors for rain balls - fluorescent colors with labels and hit requirements
         this.rainColors = [
-            { color: '#ff6600', label: 'HOT' },    // Orange fluo
-            { color: '#ff1493', label: 'COOL' },   // Pink fluo  
-            { color: '#ffff00', label: 'COLD' }    // Yellow fluo
+            { color: '#ff6600', label: 'HOT', hitsRequired: 1 },    // Orange fluo - 1 hit
+            { color: '#ff1493', label: 'COOL', hitsRequired: 2 },   // Pink fluo - 2 hits
+            { color: '#ffff00', label: 'COLD', hitsRequired: 3 }    // Yellow fluo - 3 hits
         ];
         
         // Assets
@@ -527,9 +527,12 @@ class ToasterGame {
             this.rainBalls.push({
                 x: Math.random() * this.canvas.width,
                 y: -20,
-                radius: 20, // Fixed size for all rain balls - made bigger
+                radius: 20, // Initial size for all rain balls
+                originalRadius: 20, // Store original size for calculations
                 color: colorData.color,
                 label: colorData.label,
+                hitsRequired: colorData.hitsRequired,
+                hitsTaken: 0, // Track how many hits this ball has taken
                 speed: Math.random() * 3 + this.rainSpeed,
                 rotation: 0,
                 rotationSpeed: (Math.random() - 0.5) * 0.2 // Random rotation speed -0.1 to +0.1
@@ -635,10 +638,25 @@ class ToasterGame {
             for (let j = this.rainBalls.length - 1; j >= 0; j--) {
                 const ball = this.rainBalls[j];
                 if (this.circleRectCollision(ball, toast)) {
+                    // Increment hit count
+                    ball.hitsTaken++;
+                    
+                    // Create particles for the hit
                     this.createParticles(ball.x, ball.y, ball.color);
                     this.playRandomBangSound();
+                    
+                    // Remove the toast (it's consumed by the hit)
                     this.toasts.splice(i, 1);
-                    this.rainBalls.splice(j, 1);
+                    
+                    // Check if ball should be destroyed
+                    if (ball.hitsTaken >= ball.hitsRequired) {
+                        // Ball is destroyed - remove it
+                        this.rainBalls.splice(j, 1);
+                    } else {
+                        // Ball survives - reduce its size
+                        const sizeReduction = ball.originalRadius * 0.3; // Reduce by 30% each hit
+                        ball.radius = Math.max(ball.originalRadius - (ball.hitsTaken * sizeReduction), ball.originalRadius * 0.2); // Minimum 20% of original size
+                    }
                     break;
                 }
             }
@@ -897,15 +915,15 @@ class GameActivator {
     }
     
     init() {
-        const modelContainer = document.getElementById('model-container');
-        if (modelContainer) {
-            // Mouse click events
-            modelContainer.addEventListener('click', (e) => {
+        const logoContainer = document.querySelector('.logo-container');
+        if (logoContainer) {
+            // Mouse down events (triggers when mouse button is pressed)
+            logoContainer.addEventListener('mousedown', (e) => {
                 this.handleClick(e);
             });
             
             // Touch events for mobile
-            modelContainer.addEventListener('touchstart', (e) => {
+            logoContainer.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 this.handleClick(e);
             });
@@ -920,11 +938,19 @@ class GameActivator {
             clearTimeout(this.clickTimeout);
         }
         
+        // Start click window (pause toaster movements) if this is the first click
+        if (this.clickCount === 0 && window.toasterMovementControl) {
+            window.toasterMovementControl.startClickWindow();
+        }
+        
         this.clickCount++;
-        console.log(`3D Model clicked! Count: ${this.clickCount}/10`);
+        console.log(`Logo clicked! Count: ${this.clickCount}/10`);
         
         // Animate the main logo on each click
         this.animateMainLogo();
+        
+        // Animate the toaster based on click count
+        this.animateToaster();
         
         // If we've reached 10 clicks, activate the game
         if (this.clickCount >= 10) {
@@ -937,12 +963,18 @@ class GameActivator {
         this.clickTimeout = setTimeout(() => {
             console.log(`⏰ Click timeout! Resetting count from ${this.clickCount} to 0`);
             this.clickCount = 0;
+            // Reset toaster to original size when clicks reset
+            this.resetToaster();
+            // End click window (resume toaster movements)
+            if (window.toasterMovementControl) {
+                window.toasterMovementControl.endClickWindow();
+            }
         }, this.clickWindow);
     }
     
     animateMainLogo() {
-        const logoLink = document.querySelector('.logo-container a');
-        if (!logoLink) return;
+        const logoContainer = document.querySelector('.logo-container');
+        if (!logoContainer) return;
 
         // Prevent multiple animations from running simultaneously
         if (this.logoAnimating) {
@@ -957,26 +989,92 @@ class GameActivator {
         const animationDuration = 200; // 200ms total animation
 
         // Simple CSS transition animation
-        logoLink.style.transition = `transform ${animationDuration}ms ease-in-out`;
+        logoContainer.style.transition = `transform ${animationDuration}ms ease-in-out`;
         
         // Inflate
-        logoLink.style.transform = `scale(${maxInflation})`;
+        logoContainer.style.transform = `scale(${maxInflation})`;
         
         // After half the duration, deflate
         setTimeout(() => {
-            logoLink.style.transform = 'scale(1.0)';
+            logoContainer.style.transform = 'scale(1.0)';
         }, animationDuration / 2);
         
         // Reset after animation completes
         setTimeout(() => {
-            logoLink.style.transition = '';
+            logoContainer.style.transition = '';
             this.logoAnimating = false;
             console.log('Logo animation complete');
         }, animationDuration);
     }
     
+    animateToaster() {
+        const toaster = document.querySelector('#toaster');
+        if (!toaster) return;
+        
+        // Ensure transform origin is set to center for proper scaling
+        toaster.style.transformOrigin = 'center center';
+        
+        // Calculate inflation based on click count (0-10)
+        // Start at 1.0 (normal size) and go up to 1.15 (15% inflation) at 10 clicks
+        const inflationProgress = this.clickCount / 10;
+        const targetScale = 1.0 + (inflationProgress * 0.15);
+        
+        // Calculate upward movement to keep toaster within SVG bounds
+        // Move up more as it inflates to prevent overflow
+        const upwardMovement = inflationProgress * 8; // 0-8px upward movement
+        
+        // Create bouncy animation sequence
+        this.performBouncyInflation(toaster, targetScale, upwardMovement);
+        
+        console.log(`Toaster inflating to ${targetScale.toFixed(2)}x and moving up ${upwardMovement.toFixed(1)}px (${this.clickCount}/10 clicks)`);
+    }
+    
+    performBouncyInflation(toaster, targetScale, upwardMovement) {
+        // First bounce: overshoot the target (reduced bounce)
+        const overshootScale = targetScale + 0.04; // 4% overshoot (reduced from 8%)
+        const overshootUpward = upwardMovement + 1; // Extra upward movement for bounce (reduced from 2)
+        
+        // Set bouncy transition for the overshoot (less aggressive easing)
+        toaster.style.transition = 'transform 0.18s cubic-bezier(0.68, -0.25, 0.265, 1.25)';
+        toaster.style.transform = `translateY(-${overshootUpward}px) scale(${overshootScale})`;
+        
+        // Second bounce: settle to target with slight undershoot
+        setTimeout(() => {
+            const undershootScale = targetScale - 0.015; // 1.5% undershoot (reduced from 2%)
+            const undershootUpward = upwardMovement - 0.3; // Reduced from 0.5
+            
+            toaster.style.transition = 'transform 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            toaster.style.transform = `translateY(-${undershootUpward}px) scale(${undershootScale})`;
+            
+            // Final settle: reach exact target
+            setTimeout(() => {
+                toaster.style.transition = 'transform 0.08s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                toaster.style.transform = `translateY(-${upwardMovement}px) scale(${targetScale})`;
+            }, 120); // Reduced from 150ms
+        }, 180); // Reduced from 200ms
+    }
+    
+    resetToaster() {
+        const toaster = document.querySelector('#toaster');
+        if (!toaster) return;
+        
+        // Ensure transform origin is set to center for proper scaling
+        toaster.style.transformOrigin = 'center center';
+        
+        // Reset toaster to original size and position
+        toaster.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        toaster.style.transform = 'translateY(0px) scale(1.0)';
+        
+        console.log('Toaster reset to original size and position');
+    }
+    
     activateGame() {
         this.clickCount = 0;
+        
+        // End click window (resume toaster movements) when game activates
+        if (window.toasterMovementControl) {
+            window.toasterMovementControl.endClickWindow();
+        }
         
         // Fade out main content
         const mainContent = document.querySelector('.main-content');

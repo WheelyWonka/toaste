@@ -174,12 +174,46 @@ window.closeErrorModal = function() {
     });
 }
 
+// Show shipping error modal
+function showShippingErrorModal() {
+    const shippingErrorModal = document.getElementById('shipping-error-modal');
+    shippingErrorModal.style.display = 'flex';
+    
+    // Disable submit button
+    const submitBtn = document.querySelector('#order-review .submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = '0.5';
+    submitBtn.style.cursor = 'not-allowed';
+}
+
+// Close shipping error modal (global function for onclick)
+window.closeShippingErrorModal = function() {
+    const shippingErrorModal = document.getElementById('shipping-error-modal');
+    shippingErrorModal.style.display = 'none';
+    
+    // Reset shipping calculation flag
+    shippingCalculationFailed = false;
+    
+    // Go back to step 2 to fix address
+    const contactSection = document.getElementById('contact-form');
+    const reviewSection = document.getElementById('order-review');
+    
+    contactSection.style.display = 'block';
+    reviewSection.style.display = 'none';
+    
+    // Scroll to contact form
+    contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 // Pricing configuration
 const PRICING = {
     basePrice: 45.00, // Base price per wheel cover
     pairDiscount: 0.05, // 5% discount for pairs
     taxRate: 0.15 // 15% Quebec taxes
 };
+
+// Track shipping calculation status
+let shippingCalculationFailed = false;
 
 // Format wheel size for display
 function formatWheelSize(wheelSize) {
@@ -204,14 +238,18 @@ function getValidationMessages() {
             nameRequired: 'Entre ton nom',
             emailRequired: 'Entre ton email',
             emailInvalid: 'Entre une adresse email valide',
-            addressRequired: 'Entre ton adresse'
+            addressRequired: 'Entre ton adresse',
+            cityRequired: 'Entre ta ville',
+            countryRequired: 'Sélectionne ton pays'
         };
     } else {
         return {
             nameRequired: 'Please enter your name',
             emailRequired: 'Please enter your email',
             emailInvalid: 'Please enter a valid email address',
-            addressRequired: 'Please enter your address'
+            addressRequired: 'Please enter your address',
+            cityRequired: 'Please enter your city',
+            countryRequired: 'Please select your country'
         };
     }
 }
@@ -221,7 +259,7 @@ function updateExistingErrorMessages() {
     const messages = getValidationMessages();
     
     // Check each field for existing errors and update them
-    const fields = ['name', 'email', 'address'];
+    const fields = ['name', 'email', 'address_1', 'city', 'country'];
     
     fields.forEach(fieldId => {
         const field = document.getElementById(fieldId);
@@ -240,8 +278,12 @@ function updateExistingErrorMessages() {
                 } else if (!validateEmail(field.value)) {
                     newMessage = messages.emailInvalid;
                 }
-            } else if (fieldId === 'address' && !validateAddress(field.value)) {
+            } else if (fieldId === 'address_1' && !field.value.trim()) {
                 newMessage = messages.addressRequired;
+            } else if (fieldId === 'city' && !field.value.trim()) {
+                newMessage = messages.cityRequired;
+            } else if (fieldId === 'country' && !field.value.trim()) {
+                newMessage = messages.countryRequired;
             }
             
             // Update the error message if we have a new one
@@ -294,9 +336,19 @@ function calculateTotalPrice(products, shippingFee = 0) {
 
 // Calculate shipping fee using ChitChats API
 async function calculateShippingFee() {
-    const address = document.getElementById('address').value;
-    if (!address) {
-        updateShippingDisplay(0, 'Address required');
+    const addressData = {
+        name: document.getElementById('name').value,
+        address_1: document.getElementById('address_1').value,
+        city: document.getElementById('city').value,
+        postal_code: document.getElementById('postalCode').value,
+        country_code: document.getElementById('country').value
+    };
+
+    // Validate required fields
+    if (!addressData.name || !addressData.address_1 || !addressData.city || !addressData.country_code) {
+        updateShippingDisplay(0, i18n.t('contactForm.shippingValidationError'));
+        shippingCalculationFailed = true;
+        showShippingErrorModal();
         return;
     }
 
@@ -309,7 +361,7 @@ async function calculateShippingFee() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ address, orderId: tempOrderId })
+            body: JSON.stringify({ address: addressData, orderId: tempOrderId })
         });
 
         const result = await response.json();
@@ -317,12 +369,17 @@ async function calculateShippingFee() {
         if (result.success) {
             updateShippingDisplay(result.shippingCost, null);
             updateTotalWithShipping(result.shippingCost);
+            shippingCalculationFailed = false; // Reset flag on success
         } else {
-            updateShippingDisplay(0, result.error || 'Failed to calculate shipping');
+            updateShippingDisplay(0, result.error || i18n.t('contactForm.shippingError'));
+            shippingCalculationFailed = true;
+            showShippingErrorModal();
         }
     } catch (error) {
         console.error('Shipping calculation error:', error);
-        updateShippingDisplay(0, 'Shipping calculation failed');
+        updateShippingDisplay(0, i18n.t('contactForm.shippingError'));
+        shippingCalculationFailed = true;
+        showShippingErrorModal();
     }
 }
 
@@ -973,13 +1030,30 @@ function validateForm() {
         clearFieldError('email');
     }
     
-    // Validate address
-    const address = document.getElementById('address').value;
-    if (!validateAddress(address)) {
-        showFieldError('address', messages.addressRequired);
+    // Validate address fields
+    const address_1 = document.getElementById('address_1').value;
+    const city = document.getElementById('city').value;
+    const country = document.getElementById('country').value;
+    
+    if (!address_1.trim()) {
+        showFieldError('address_1', messages.addressRequired);
         isValid = false;
     } else {
-        clearFieldError('address');
+        clearFieldError('address_1');
+    }
+    
+    if (!city.trim()) {
+        showFieldError('city', messages.cityRequired);
+        isValid = false;
+    } else {
+        clearFieldError('city');
+    }
+    
+    if (!country.trim()) {
+        showFieldError('country', messages.countryRequired);
+        isValid = false;
+    } else {
+        clearFieldError('country');
     }
     
     return isValid;
@@ -1025,14 +1099,24 @@ document.getElementById('email').addEventListener('blur', () => {
     }
 });
 
-document.getElementById('address').addEventListener('blur', () => {
-    const address = document.getElementById('address').value;
-    if (address && !validateAddress(address)) {
+// Add blur event listeners for address fields
+['address_1', 'city', 'country'].forEach(fieldId => {
+    document.getElementById(fieldId).addEventListener('blur', () => {
+        const field = document.getElementById(fieldId);
         const messages = getValidationMessages();
-        showFieldError('address', messages.addressRequired);
-    } else {
-        clearFieldError('address');
-    }
+        
+        if (!field.value.trim()) {
+            let message = '';
+            switch(fieldId) {
+                case 'address_1': message = messages.addressRequired; break;
+                case 'city': message = messages.cityRequired; break;
+                case 'country': message = messages.countryRequired; break;
+            }
+            showFieldError(fieldId, message);
+        } else {
+            clearFieldError(fieldId);
+        }
+    });
 });
 
 // Clear errors when user starts typing
@@ -1044,8 +1128,11 @@ document.getElementById('email').addEventListener('input', () => {
     clearFieldError('email');
 });
 
-document.getElementById('address').addEventListener('input', () => {
-    clearFieldError('address');
+// Clear errors when user starts typing for address fields
+['address_1', 'city', 'country'].forEach(fieldId => {
+    document.getElementById(fieldId).addEventListener('input', () => {
+        clearFieldError(fieldId);
+    });
 });
 
 // Image Carousel functionality
@@ -1157,6 +1244,18 @@ document.addEventListener('DOMContentLoaded', () => {
 // Update review display
 function updateReviewDisplay() {
     // Contact info
+    const address_1 = document.getElementById('address_1').value;
+    const city = document.getElementById('city').value;
+    const postalCode = document.getElementById('postalCode').value;
+    const country = document.getElementById('country').value;
+    
+    // Format address for display
+    let addressDisplay = address_1 + ', ' + city;
+    if (postalCode) {
+        addressDisplay += ', ' + postalCode;
+    }
+    addressDisplay += ', ' + country;
+    
     reviewContactInfo.innerHTML = `
         <div class="review-contact-item">
             <span class="review-contact-label">Name:</span> ${document.getElementById('name').value}
@@ -1165,7 +1264,7 @@ function updateReviewDisplay() {
             <span class="review-contact-label">Email:</span> ${document.getElementById('email').value}
         </div>
         <div class="review-contact-item">
-            <span class="review-contact-label">Address:</span> ${document.getElementById('address').value}
+            <span class="review-contact-label">Address:</span> ${addressDisplay}
         </div>
         ${document.getElementById('notes').value ? `
         <div class="review-contact-item">
@@ -1242,6 +1341,12 @@ function updateReviewDisplay() {
 
 // Handle final order submission
 document.querySelector('#order-review .submit-btn').addEventListener('click', async () => {
+    // Check if shipping calculation failed
+    if (shippingCalculationFailed) {
+        showShippingErrorModal();
+        return;
+    }
+
     // Get current shipping fee
     const shippingFeeElement = document.getElementById('shipping-fee-price');
     let shippingFee = 0;
@@ -1257,7 +1362,13 @@ document.querySelector('#order-review .submit-btn').addEventListener('click', as
         products: selectedProducts,
         customerName: document.getElementById('name').value,
         customerEmail: document.getElementById('email').value,
-        shippingAddress: document.getElementById('address').value,
+        shippingAddress: {
+            name: document.getElementById('name').value,
+            address_1: document.getElementById('address_1').value,
+            city: document.getElementById('city').value,
+            postal_code: document.getElementById('postalCode').value,
+            country_code: document.getElementById('country').value
+        },
         notes: document.getElementById('notes').value,
         language: localStorage.getItem('language') || navigator.language.split('-')[0],
         shippingFee: shippingFee

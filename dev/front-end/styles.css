@@ -1482,8 +1482,11 @@ input:hover, select:hover, textarea:hover {
 }
 
 .shipping-error {
+    width: 100%;
     color: #ff6b6b;
     font-size: 0.9rem;
+    text-align: right;
+    display: block;
 }
 
 @keyframes spin {

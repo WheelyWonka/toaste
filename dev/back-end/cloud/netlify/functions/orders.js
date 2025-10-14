@@ -63,6 +63,20 @@ async function ordersHandler(event, context) {
         });
       }
 
+      // Validate address structure
+      if (!shippingAddress.name || !shippingAddress.address_1 || !shippingAddress.city || !shippingAddress.country_code) {
+        return createCorsResponse(400, event, {
+          error: 'Incomplete address. Please provide name, address, city, and country.'
+        });
+      }
+
+      // Format address for storage
+      let formattedAddress = `${shippingAddress.address_1}, ${shippingAddress.city}`;
+      if (shippingAddress.postal_code) {
+        formattedAddress += `, ${shippingAddress.postal_code}`;
+      }
+      formattedAddress += `, ${shippingAddress.country_code}`;
+
       // Validate each product
       for (let i = 0; i < products.length; i++) {
         const product = products[i];
@@ -136,7 +150,7 @@ async function ordersHandler(event, context) {
         'Order Code': orderCode,
         'Customer Name': customerName,
         'Customer Email': customerEmail,
-        'Shipping Address': shippingAddress,
+        'Shipping Address': formattedAddress,
         'Notes': notes || '',
         'Order Date': new Date().toISOString().split('T')[0],
         'Status': 'waiting_for_payment',
@@ -188,7 +202,7 @@ async function ordersHandler(event, context) {
           orderCode: orderCode,
           customerName: customerName,
           customerEmail: customerEmail,
-          customerAddress: shippingAddress,
+          customerAddress: formattedAddress,
           customerNotes: notes || '',
           language: language,
           products: productDetails.map(product => ({

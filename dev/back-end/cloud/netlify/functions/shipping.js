@@ -62,23 +62,25 @@ function getCountryFromPostalCode(postalCode) {
 // Make request to ChitChats API
 function requestShippingRate(addressData, orderId = null) {
   return new Promise((resolve, reject) => {
+    // Calculate required fields automatically
+    const numberOfCovers = 1; // Default to 1 cover for shipping calculation
+    const weight = 100 * numberOfCovers; // 100g per cover
+    const size_z = 3 + (0.5 * numberOfCovers); // 3cm base + 0.5cm per cover
+    
     const postData = JSON.stringify({
-      name: orderId ? `Order ${orderId}` : "Shipping Address",
-      address_1: addressData.street,
+      name: addressData.name,
+      address_1: addressData.address_1,
       city: addressData.city,
-      province_code: addressData.province,
-      postal_code: addressData.postalCode,
-      country_code: addressData.country,
-      description: "Bike wheel covers",
+      country_code: addressData.country_code,
       value: "40", // Base price per cover
       value_currency: "cad",
-      package_type: "parcel",
-      size_unit: "cm",
-      size_x: 30, // Approximate dimensions for wheel covers
-      size_y: 30,
-      size_z: 2,
+      package_type: "large_flat_rate_box",
       weight_unit: "g",
-      weight: 150, // Approximate weight per cover
+      weight: weight.toString(),
+      size_unit: "cm",
+      size_x: 622,
+      size_y: 622,
+      size_z: size_z,
       postage_type: "chit_chats_canada_tracked", // Default to Canada tracked
       ship_date: "today"
     });
@@ -139,14 +141,19 @@ async function shippingHandler(event) {
       return createCorsResponse(400, event, { error: 'Address is required' });
     }
 
-    // Parse the address
-    const addressData = parseAddress(address);
-    addressData.country = getCountryFromPostalCode(addressData.postalCode);
+    // Use the structured address data directly
+    const addressData = {
+      name: address.name || '',
+      address_1: address.address_1 || '',
+      city: address.city || '',
+      postal_code: address.postal_code || '',
+      country_code: address.country_code || 'CA'
+    };
 
     // Validate required fields
-    if (!addressData.street || !addressData.city || !addressData.province || !addressData.postalCode) {
+    if (!addressData.name || !addressData.address_1 || !addressData.city || !addressData.country_code) {
       return createCorsResponse(400, event, { 
-        error: 'Incomplete address. Please provide street, city, province, and postal code.' 
+        error: 'Incomplete address. Please provide name, address, city, and country.' 
       });
     }
 

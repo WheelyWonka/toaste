@@ -133,8 +133,185 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="address" data-i18n="contactForm.address.label">Your Address:</label>
-                            <textarea id="address" name="address" required data-i18n="contactForm.address.placeholder" placeholder="Your complete address"></textarea>
+                            <label for="address_1" data-i18n="contactForm.address.label">Address:</label>
+                            <input type="text" id="address_1" name="address_1" required data-i18n="contactForm.address.placeholder" placeholder="123 Main Street">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="city" data-i18n="contactForm.city.label">City:</label>
+                            <input type="text" id="city" name="city" required data-i18n="contactForm.city.placeholder" placeholder="Montreal">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="postalCode" data-i18n="contactForm.postalCode.label">Postal Code:</label>
+                            <input type="text" id="postalCode" name="postalCode" data-i18n="contactForm.postalCode.placeholder" placeholder="H1A 1A1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="country" data-i18n="contactForm.country.label">Country:</label>
+                            <select id="country" name="country" required>
+                                <option value="CA" data-i18n="contactForm.country.canada">Canada</option>
+                                <option value="US" data-i18n="contactForm.country.usa">United States</option>
+                                <option value="GB" data-i18n="contactForm.country.uk">United Kingdom</option>
+                                <option value="FR" data-i18n="contactForm.country.france">France</option>
+                                <option value="DE" data-i18n="contactForm.country.germany">Germany</option>
+                                <option value="AU" data-i18n="contactForm.country.australia">Australia</option>
+                                <option value="JP" data-i18n="contactForm.country.japan">Japan</option>
+                                <option value="MX" data-i18n="contactForm.country.mexico">Mexico</option>
+                                <option value="BR" data-i18n="contactForm.country.brazil">Brazil</option>
+                                <option value="IN" data-i18n="contactForm.country.india">India</option>
+                                <option value="CN" data-i18n="contactForm.country.china">China</option>
+                                <option value="IT" data-i18n="contactForm.country.italy">Italy</option>
+                                <option value="ES" data-i18n="contactForm.country.spain">Spain</option>
+                                <option value="NL" data-i18n="contactForm.country.netherlands">Netherlands</option>
+                                <option value="SE" data-i18n="contactForm.country.sweden">Sweden</option>
+                                <option value="NO" data-i18n="contactForm.country.norway">Norway</option>
+                                <option value="DK" data-i18n="contactForm.country.denmark">Denmark</option>
+                                <option value="FI" data-i18n="contactForm.country.finland">Finland</option>
+                                <option value="CH" data-i18n="contactForm.country.switzerland">Switzerland</option>
+                                <option value="AT" data-i18n="contactForm.country.austria">Austria</option>
+                                <option value="BE" data-i18n="contactForm.country.belgium">Belgium</option>
+                                <option value="IE" data-i18n="contactForm.country.ireland">Ireland</option>
+                                <option value="PT" data-i18n="contactForm.country.portugal">Portugal</option>
+                                <option value="PL" data-i18n="contactForm.country.poland">Poland</option>
+                                <option value="CZ" data-i18n="contactForm.country.czech">Czech Republic</option>
+                                <option value="HU" data-i18n="contactForm.country.hungary">Hungary</option>
+                                <option value="RO" data-i18n="contactForm.country.romania">Romania</option>
+                                <option value="BG" data-i18n="contactForm.country.bulgaria">Bulgaria</option>
+                                <option value="HR" data-i18n="contactForm.country.croatia">Croatia</option>
+                                <option value="SI" data-i18n="contactForm.country.slovenia">Slovenia</option>
+                                <option value="SK" data-i18n="contactForm.country.slovakia">Slovakia</option>
+                                <option value="LT" data-i18n="contactForm.country.lithuania">Lithuania</option>
+                                <option value="LV" data-i18n="contactForm.country.latvia">Latvia</option>
+                                <option value="EE" data-i18n="contactForm.country.estonia">Estonia</option>
+                                <option value="GR" data-i18n="contactForm.country.greece">Greece</option>
+                                <option value="CY" data-i18n="contactForm.country.cyprus">Cyprus</option>
+                                <option value="MT" data-i18n="contactForm.country.malta">Malta</option>
+                                <option value="LU" data-i18n="contactForm.country.luxembourg">Luxembourg</option>
+                                <option value="IS" data-i18n="contactForm.country.iceland">Iceland</option>
+                                <option value="NZ" data-i18n="contactForm.country.newzealand">New Zealand</option>
+                                <option value="ZA" data-i18n="contactForm.country.southafrica">South Africa</option>
+                                <option value="AR" data-i18n="contactForm.country.argentina">Argentina</option>
+                                <option value="CL" data-i18n="contactForm.country.chile">Chile</option>
+                                <option value="CO" data-i18n="contactForm.country.colombia">Colombia</option>
+                                <option value="PE" data-i18n="contactForm.country.peru">Peru</option>
+                                <option value="VE" data-i18n="contactForm.country.venezuela">Venezuela</option>
+                                <option value="UY" data-i18n="contactForm.country.uruguay">Uruguay</option>
+                                <option value="PY" data-i18n="contactForm.country.paraguay">Paraguay</option>
+                                <option value="BO" data-i18n="contactForm.country.bolivia">Bolivia</option>
+                                <option value="EC" data-i18n="contactForm.country.ecuador">Ecuador</option>
+                                <option value="GY" data-i18n="contactForm.country.guyana">Guyana</option>
+                                <option value="SR" data-i18n="contactForm.country.suriname">Suriname</option>
+                                <option value="GF" data-i18n="contactForm.country.frenchguiana">French Guiana</option>
+                                <option value="FK" data-i18n="contactForm.country.falkland">Falkland Islands</option>
+                                <option value="KR" data-i18n="contactForm.country.southkorea">South Korea</option>
+                                <option value="TH" data-i18n="contactForm.country.thailand">Thailand</option>
+                                <option value="VN" data-i18n="contactForm.country.vietnam">Vietnam</option>
+                                <option value="MY" data-i18n="contactForm.country.malaysia">Malaysia</option>
+                                <option value="SG" data-i18n="contactForm.country.singapore">Singapore</option>
+                                <option value="ID" data-i18n="contactForm.country.indonesia">Indonesia</option>
+                                <option value="PH" data-i18n="contactForm.country.philippines">Philippines</option>
+                                <option value="TW" data-i18n="contactForm.country.taiwan">Taiwan</option>
+                                <option value="HK" data-i18n="contactForm.country.hongkong">Hong Kong</option>
+                                <option value="MO" data-i18n="contactForm.country.macau">Macau</option>
+                                <option value="RU" data-i18n="contactForm.country.russia">Russia</option>
+                                <option value="UA" data-i18n="contactForm.country.ukraine">Ukraine</option>
+                                <option value="BY" data-i18n="contactForm.country.belarus">Belarus</option>
+                                <option value="MD" data-i18n="contactForm.country.moldova">Moldova</option>
+                                <option value="GE" data-i18n="contactForm.country.georgia">Georgia</option>
+                                <option value="AM" data-i18n="contactForm.country.armenia">Armenia</option>
+                                <option value="AZ" data-i18n="contactForm.country.azerbaijan">Azerbaijan</option>
+                                <option value="KZ" data-i18n="contactForm.country.kazakhstan">Kazakhstan</option>
+                                <option value="UZ" data-i18n="contactForm.country.uzbekistan">Uzbekistan</option>
+                                <option value="TM" data-i18n="contactForm.country.turkmenistan">Turkmenistan</option>
+                                <option value="TJ" data-i18n="contactForm.country.tajikistan">Tajikistan</option>
+                                <option value="KG" data-i18n="contactForm.country.kyrgyzstan">Kyrgyzstan</option>
+                                <option value="AF" data-i18n="contactForm.country.afghanistan">Afghanistan</option>
+                                <option value="PK" data-i18n="contactForm.country.pakistan">Pakistan</option>
+                                <option value="BD" data-i18n="contactForm.country.bangladesh">Bangladesh</option>
+                                <option value="LK" data-i18n="contactForm.country.srilanka">Sri Lanka</option>
+                                <option value="MV" data-i18n="contactForm.country.maldives">Maldives</option>
+                                <option value="BT" data-i18n="contactForm.country.bhutan">Bhutan</option>
+                                <option value="NP" data-i18n="contactForm.country.nepal">Nepal</option>
+                                <option value="MM" data-i18n="contactForm.country.myanmar">Myanmar</option>
+                                <option value="LA" data-i18n="contactForm.country.laos">Laos</option>
+                                <option value="KH" data-i18n="contactForm.country.cambodia">Cambodia</option>
+                                <option value="BN" data-i18n="contactForm.country.brunei">Brunei</option>
+                                <option value="TL" data-i18n="contactForm.country.timorleste">Timor-Leste</option>
+                                <option value="MN" data-i18n="contactForm.country.mongolia">Mongolia</option>
+                                <option value="KP" data-i18n="contactForm.country.northkorea">North Korea</option>
+                                <option value="TR" data-i18n="contactForm.country.turkey">Turkey</option>
+                                <option value="IL" data-i18n="contactForm.country.israel">Israel</option>
+                                <option value="PS" data-i18n="contactForm.country.palestine">Palestine</option>
+                                <option value="JO" data-i18n="contactForm.country.jordan">Jordan</option>
+                                <option value="LB" data-i18n="contactForm.country.lebanon">Lebanon</option>
+                                <option value="SY" data-i18n="contactForm.country.syria">Syria</option>
+                                <option value="IQ" data-i18n="contactForm.country.iraq">Iraq</option>
+                                <option value="IR" data-i18n="contactForm.country.iran">Iran</option>
+                                <option value="KW" data-i18n="contactForm.country.kuwait">Kuwait</option>
+                                <option value="SA" data-i18n="contactForm.country.saudiarabia">Saudi Arabia</option>
+                                <option value="AE" data-i18n="contactForm.country.uae">United Arab Emirates</option>
+                                <option value="QA" data-i18n="contactForm.country.qatar">Qatar</option>
+                                <option value="BH" data-i18n="contactForm.country.bahrain">Bahrain</option>
+                                <option value="OM" data-i18n="contactForm.country.oman">Oman</option>
+                                <option value="YE" data-i18n="contactForm.country.yemen">Yemen</option>
+                                <option value="EG" data-i18n="contactForm.country.egypt">Egypt</option>
+                                <option value="LY" data-i18n="contactForm.country.libya">Libya</option>
+                                <option value="TN" data-i18n="contactForm.country.tunisia">Tunisia</option>
+                                <option value="DZ" data-i18n="contactForm.country.algeria">Algeria</option>
+                                <option value="MA" data-i18n="contactForm.country.morocco">Morocco</option>
+                                <option value="SD" data-i18n="contactForm.country.sudan">Sudan</option>
+                                <option value="SS" data-i18n="contactForm.country.southsudan">South Sudan</option>
+                                <option value="ET" data-i18n="contactForm.country.ethiopia">Ethiopia</option>
+                                <option value="ER" data-i18n="contactForm.country.eritrea">Eritrea</option>
+                                <option value="DJ" data-i18n="contactForm.country.djibouti">Djibouti</option>
+                                <option value="SO" data-i18n="contactForm.country.somalia">Somalia</option>
+                                <option value="KE" data-i18n="contactForm.country.kenya">Kenya</option>
+                                <option value="UG" data-i18n="contactForm.country.uganda">Uganda</option>
+                                <option value="TZ" data-i18n="contactForm.country.tanzania">Tanzania</option>
+                                <option value="RW" data-i18n="contactForm.country.rwanda">Rwanda</option>
+                                <option value="BI" data-i18n="contactForm.country.burundi">Burundi</option>
+                                <option value="MW" data-i18n="contactForm.country.malawi">Malawi</option>
+                                <option value="ZM" data-i18n="contactForm.country.zambia">Zambia</option>
+                                <option value="ZW" data-i18n="contactForm.country.zimbabwe">Zimbabwe</option>
+                                <option value="BW" data-i18n="contactForm.country.botswana">Botswana</option>
+                                <option value="NA" data-i18n="contactForm.country.namibia">Namibia</option>
+                                <option value="SZ" data-i18n="contactForm.country.eswatini">Eswatini</option>
+                                <option value="LS" data-i18n="contactForm.country.lesotho">Lesotho</option>
+                                <option value="MG" data-i18n="contactForm.country.madagascar">Madagascar</option>
+                                <option value="MU" data-i18n="contactForm.country.mauritius">Mauritius</option>
+                                <option value="SC" data-i18n="contactForm.country.seychelles">Seychelles</option>
+                                <option value="KM" data-i18n="contactForm.country.comoros">Comoros</option>
+                                <option value="YT" data-i18n="contactForm.country.mayotte">Mayotte</option>
+                                <option value="RE" data-i18n="contactForm.country.reunion">Réunion</option>
+                                <option value="MZ" data-i18n="contactForm.country.mozambique">Mozambique</option>
+                                <option value="MW" data-i18n="contactForm.country.malawi">Malawi</option>
+                                <option value="AO" data-i18n="contactForm.country.angola">Angola</option>
+                                <option value="CD" data-i18n="contactForm.country.drc">Democratic Republic of the Congo</option>
+                                <option value="CG" data-i18n="contactForm.country.congo">Republic of the Congo</option>
+                                <option value="CF" data-i18n="contactForm.country.car">Central African Republic</option>
+                                <option value="TD" data-i18n="contactForm.country.chad">Chad</option>
+                                <option value="CM" data-i18n="contactForm.country.cameroon">Cameroon</option>
+                                <option value="GQ" data-i18n="contactForm.country.equatorialguinea">Equatorial Guinea</option>
+                                <option value="GA" data-i18n="contactForm.country.gabon">Gabon</option>
+                                <option value="ST" data-i18n="contactForm.country.saotome">São Tomé and Príncipe</option>
+                                <option value="GH" data-i18n="contactForm.country.ghana">Ghana</option>
+                                <option value="TG" data-i18n="contactForm.country.togo">Togo</option>
+                                <option value="BJ" data-i18n="contactForm.country.benin">Benin</option>
+                                <option value="NE" data-i18n="contactForm.country.niger">Niger</option>
+                                <option value="BF" data-i18n="contactForm.country.burkinafaso">Burkina Faso</option>
+                                <option value="ML" data-i18n="contactForm.country.mali">Mali</option>
+                                <option value="SN" data-i18n="contactForm.country.senegal">Senegal</option>
+                                <option value="GM" data-i18n="contactForm.country.gambia">Gambia</option>
+                                <option value="GN" data-i18n="contactForm.country.guinea">Guinea</option>
+                                <option value="GW" data-i18n="contactForm.country.guineabissau">Guinea-Bissau</option>
+                                <option value="SL" data-i18n="contactForm.country.sierraleone">Sierra Leone</option>
+                                <option value="LR" data-i18n="contactForm.country.liberia">Liberia</option>
+                                <option value="CI" data-i18n="contactForm.country.ivorycoast">Ivory Coast</option>
+                                <option value="NG" data-i18n="contactForm.country.nigeria">Nigeria</option>
+                                <option value="TD" data-i18n="contactForm.country.chad">Chad</option>
+                                <option value="CA" data-i18n="contactForm.country.canada">Canada</option>
+                            </select>
                         </div>
 
                         <div class="form-group">
@@ -288,6 +465,18 @@
             <p><strong data-i18n="errorModal.email">toastebikepolo@pronton.me</strong></p>
             <div class="error-modal-actions">
                 <button type="button" class="error-modal-btn" onclick="closeErrorModal()" data-i18n="errorModal.tryAgain">Try again?</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="shipping-error-modal" class="error-modal" style="display: none;">
+        <div class="error-modal-content">
+            <h3 data-i18n="shippingErrorModal.title">Shipping calculation failed 📦</h3>
+            <p data-i18n="shippingErrorModal.message1">We couldn't calculate the shipping cost for your address. This might be due to an invalid address or a temporary issue with our shipping provider.</p>
+            <p data-i18n="shippingErrorModal.message2">You can try to fix your address information and retry, or contact us directly:</p>
+            <p><strong data-i18n="shippingErrorModal.email">toastebikepolo@proton.me</strong></p>
+            <div class="error-modal-actions">
+                <button type="button" class="error-modal-btn" onclick="closeShippingErrorModal()" data-i18n="shippingErrorModal.tryAgain">Fix address & retry</button>
             </div>
         </div>
     </div>

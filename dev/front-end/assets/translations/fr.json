@@ -53,6 +53,10 @@
       "placeholder": "Montréal",
       "required": "Entre ta ville"
     },
+    "provinceCode": {
+      "label": "Code province/état (si applicable)\u00A0:",
+      "placeholder": "QC"
+    },
     "postalCode": {
       "label": "Code postal\u00A0:",
       "placeholder": "H1A 1A1"

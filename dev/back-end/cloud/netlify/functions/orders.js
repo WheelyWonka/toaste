@@ -72,6 +72,9 @@ async function ordersHandler(event, context) {
 
       // Format address for storage
       let formattedAddress = `${shippingAddress.address_1}, ${shippingAddress.city}`;
+      if (shippingAddress.province_code) {
+        formattedAddress += `, ${shippingAddress.province_code}`;
+      }
       if (shippingAddress.postal_code) {
         formattedAddress += `, ${shippingAddress.postal_code}`;
       }

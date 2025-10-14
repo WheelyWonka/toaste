@@ -82,7 +82,9 @@ function requestShippingRate(addressData, orderId = null) {
       size_y: 622,
       size_z: size_z,
       postage_type: "chit_chats_canada_tracked", // Default to Canada tracked
-      ship_date: "today"
+      ship_date: "today",
+      ...(addressData.province_code && { province_code: addressData.province_code }),
+      ...(addressData.postal_code && { postal_code: addressData.postal_code })
     });
 
     const options = {
@@ -146,6 +148,7 @@ async function shippingHandler(event) {
       name: address.name || '',
       address_1: address.address_1 || '',
       city: address.city || '',
+      province_code: address.province_code || '',
       postal_code: address.postal_code || '',
       country_code: address.country_code || 'CA'
     };

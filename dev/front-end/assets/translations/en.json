@@ -53,6 +53,10 @@
       "placeholder": "Montreal",
       "required": "Please enter your city"
     },
+    "provinceCode": {
+      "label": "Province/State Code (if applicable):",
+      "placeholder": "QC"
+    },
     "postalCode": {
       "label": "Postal Code:",
       "placeholder": "H1A 1A1"

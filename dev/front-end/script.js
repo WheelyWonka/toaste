@@ -254,45 +254,6 @@ function getValidationMessages() {
     }
 }
 
-// Update existing error messages when language changes
-function updateExistingErrorMessages() {
-    const messages = getValidationMessages();
-    
-    // Check each field for existing errors and update them
-    const fields = ['name', 'email', 'address_1', 'city', 'country'];
-    
-    fields.forEach(fieldId => {
-        const field = document.getElementById(fieldId);
-        const formGroup = field.closest('.form-group');
-        const existingError = formGroup.querySelector('.field-error');
-        
-        if (existingError) {
-            // Determine which message to show based on the field and current validation state
-            let newMessage = '';
-            
-            if (fieldId === 'name' && !validateName(field.value)) {
-                newMessage = messages.nameRequired;
-            } else if (fieldId === 'email') {
-                if (!field.value.trim()) {
-                    newMessage = messages.emailRequired;
-                } else if (!validateEmail(field.value)) {
-                    newMessage = messages.emailInvalid;
-                }
-            } else if (fieldId === 'address_1' && !field.value.trim()) {
-                newMessage = messages.addressRequired;
-            } else if (fieldId === 'city' && !field.value.trim()) {
-                newMessage = messages.cityRequired;
-            } else if (fieldId === 'country' && !field.value.trim()) {
-                newMessage = messages.countryRequired;
-            }
-            
-            // Update the error message if we have a new one
-            if (newMessage) {
-                existingError.textContent = newMessage;
-            }
-        }
-    });
-}
 
 // Calculate price for a product
 function calculateProductPrice(product) {
@@ -340,6 +301,7 @@ async function calculateShippingFee() {
         name: document.getElementById('name').value,
         address_1: document.getElementById('address_1').value,
         city: document.getElementById('city').value,
+        province_code: document.getElementById('provinceCode').value,
         postal_code: document.getElementById('postalCode').value,
         country_code: document.getElementById('country').value
     };
@@ -1078,62 +1040,7 @@ customerForm.addEventListener('submit', (e) => {
     reviewTitle.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
-// Add real-time validation
-document.getElementById('name').addEventListener('blur', () => {
-    const name = document.getElementById('name').value;
-    if (name && !validateName(name)) {
-        const messages = getValidationMessages();
-        showFieldError('name', messages.nameRequired);
-    } else {
-        clearFieldError('name');
-    }
-});
-
-document.getElementById('email').addEventListener('blur', () => {
-    const email = document.getElementById('email').value;
-    if (email && !validateEmail(email)) {
-        const messages = getValidationMessages();
-        showFieldError('email', messages.emailInvalid);
-    } else {
-        clearFieldError('email');
-    }
-});
-
-// Add blur event listeners for address fields
-['address_1', 'city', 'country'].forEach(fieldId => {
-    document.getElementById(fieldId).addEventListener('blur', () => {
-        const field = document.getElementById(fieldId);
-        const messages = getValidationMessages();
-        
-        if (!field.value.trim()) {
-            let message = '';
-            switch(fieldId) {
-                case 'address_1': message = messages.addressRequired; break;
-                case 'city': message = messages.cityRequired; break;
-                case 'country': message = messages.countryRequired; break;
-            }
-            showFieldError(fieldId, message);
-        } else {
-            clearFieldError(fieldId);
-        }
-    });
-});
-
-// Clear errors when user starts typing
-document.getElementById('name').addEventListener('input', () => {
-    clearFieldError('name');
-});
-
-document.getElementById('email').addEventListener('input', () => {
-    clearFieldError('email');
-});
-
-// Clear errors when user starts typing for address fields
-['address_1', 'city', 'country'].forEach(fieldId => {
-    document.getElementById(fieldId).addEventListener('input', () => {
-        clearFieldError(fieldId);
-    });
-});
+// Validation errors will only show when form is submitted
 
 // Image Carousel functionality
 let currentImageIndex = 0;
@@ -1246,11 +1153,15 @@ function updateReviewDisplay() {
     // Contact info
     const address_1 = document.getElementById('address_1').value;
     const city = document.getElementById('city').value;
+    const provinceCode = document.getElementById('provinceCode').value;
     const postalCode = document.getElementById('postalCode').value;
     const country = document.getElementById('country').value;
     
     // Format address for display
     let addressDisplay = address_1 + ', ' + city;
+    if (provinceCode) {
+        addressDisplay += ', ' + provinceCode;
+    }
     if (postalCode) {
         addressDisplay += ', ' + postalCode;
     }
@@ -1366,6 +1277,7 @@ document.querySelector('#order-review .submit-btn').addEventListener('click', as
             name: document.getElementById('name').value,
             address_1: document.getElementById('address_1').value,
             city: document.getElementById('city').value,
+            province_code: document.getElementById('provinceCode').value,
             postal_code: document.getElementById('postalCode').value,
             country_code: document.getElementById('country').value
         },
@@ -1470,7 +1382,5 @@ document.addEventListener('DOMContentLoaded', () => {
         if (reviewSection.style.display === 'block') {
             updateReviewDisplay();
         }
-        // Update existing error messages
-        updateExistingErrorMessages();
     });
 }); 

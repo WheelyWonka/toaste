@@ -66,7 +66,7 @@ function requestShippingRate(addressData, orderId = null) {
     const numberOfCovers = 1; // Default to 1 cover for shipping calculation
     const weight = 100 * numberOfCovers; // 100g per cover
     const size_z = 3 + (0.5 * numberOfCovers); // 3cm base + 0.5cm per cover
-    const price = 40 * numberOfCovers;
+    const price = 45 * numberOfCovers;
     
     const postData = JSON.stringify({
       name: addressData.name,

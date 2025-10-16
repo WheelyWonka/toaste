@@ -60,7 +60,7 @@ function getCountryFromPostalCode(postalCode) {
 }
 
 // Make request to ChitChats API
-function requestShippingRate(addressData, orderId = null, numberOfCovers = 1, totalPrice = 40) {
+function requestShippingRate(addressData, numberOfCovers = 1, totalPrice = 40) {
   return new Promise((resolve, reject) => {
     // Use provided values or defaults
     const covers = numberOfCovers || 1;
@@ -74,7 +74,7 @@ function requestShippingRate(addressData, orderId = null, numberOfCovers = 1, to
       address_1: addressData.address_1,
       city: addressData.city,
       country_code: addressData.country_code,
-      description: orderId ? `Order ${orderId}` : "Bike wheel covers",
+      description: `${numberOfCovers} Bike wheel covers`,
       value: price, // Total price of the order
       value_currency: "cad",
       package_type: "parcel",
@@ -141,7 +141,7 @@ async function shippingHandler(event) {
 
   try {
     const body = JSON.parse(event.body);
-    const { address, orderId, numberOfCovers, totalPrice } = body;
+    const { address, numberOfCovers, totalPrice } = body;
 
     if (!address) {
       return createCorsResponse(400, event, { error: 'Address is required' });
@@ -165,7 +165,7 @@ async function shippingHandler(event) {
     }
 
     // Request shipping rate from ChitChats
-    const shippingResponse = await requestShippingRate(addressData, orderId, numberOfCovers, totalPrice.total);
+    const shippingResponse = await requestShippingRate(addressData, numberOfCovers, totalPrice.total);
 
     // Extract shipping cost and shipment ID from response
     const shippingCost = shippingResponse.shipment?.postage_fee || shippingResponse.postage_fee || 0;

@@ -327,9 +327,6 @@ async function calculateShippingFee() {
     const numberOfCovers = selectedProducts.reduce((total, product) => total + product.quantity, 0);
     const totalPrice = calculateTotalPrice(selectedProducts);
 
-    // Generate a temporary order ID for shipping calculation
-    const tempOrderId = 'TEMP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
-
     try {
         const response = await fetch(`${API_CONFIG.baseUrl}/shipping`, {
             method: 'POST',
@@ -338,7 +335,6 @@ async function calculateShippingFee() {
             },
             body: JSON.stringify({ 
                 address: addressData, 
-                orderId: tempOrderId,
                 numberOfCovers: numberOfCovers,
                 totalPrice: totalPrice
             })

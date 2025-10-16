@@ -75,11 +75,11 @@ function requestShippingRate(addressData, orderId = null, numberOfCovers = 1, to
       city: addressData.city,
       country_code: addressData.country_code,
       description: orderId ? `Order ${orderId}` : "Bike wheel covers",
-      value: price.toString(), // Total price of the order
+      value: price, // Total price of the order
       value_currency: "cad",
       package_type: "parcel",
       weight_unit: "g",
-      weight: weight.toString(),
+      weight: weight,
       size_unit: "cm",
       size_x: 63,
       size_y: 63,
@@ -165,7 +165,7 @@ async function shippingHandler(event) {
     }
 
     // Request shipping rate from ChitChats
-    const shippingResponse = await requestShippingRate(addressData, orderId, numberOfCovers, totalPrice);
+    const shippingResponse = await requestShippingRate(addressData, orderId, numberOfCovers, totalPrice.total);
 
     // Extract shipping cost and shipment ID from response
     const shippingCost = shippingResponse.shipment?.postage_fee || shippingResponse.postage_fee || 0;

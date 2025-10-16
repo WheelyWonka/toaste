@@ -109,7 +109,11 @@ function loadContactInfoFromStorage() {
             const contactInfo = JSON.parse(savedContactInfo);
             document.getElementById('name').value = contactInfo.name || '';
             document.getElementById('email').value = contactInfo.email || '';
-            document.getElementById('address').value = contactInfo.address || '';
+            document.getElementById('address_1').value = contactInfo.address_1 || contactInfo.address || '';
+            document.getElementById('city').value = contactInfo.city || '';
+            document.getElementById('provinceCode').value = contactInfo.provinceCode || '';
+            document.getElementById('postalCode').value = contactInfo.postalCode || '';
+            document.getElementById('country').value = contactInfo.country || '';
             document.getElementById('notes').value = contactInfo.notes || '';
         }
     } catch (error) {
@@ -123,7 +127,11 @@ function saveContactInfoToStorage() {
         const contactInfo = {
             name: document.getElementById('name').value,
             email: document.getElementById('email').value,
-            address: document.getElementById('address').value,
+            address_1: document.getElementById('address_1').value,
+            city: document.getElementById('city').value,
+            provinceCode: document.getElementById('provinceCode').value,
+            postalCode: document.getElementById('postalCode').value,
+            country: document.getElementById('country').value,
             notes: document.getElementById('notes').value
         };
         localStorage.setItem(STORAGE_KEYS.CONTACT_INFO, JSON.stringify(contactInfo));
@@ -317,7 +325,7 @@ async function calculateShippingFee() {
 
     // Calculate number of covers and total price
     const numberOfCovers = selectedProducts.reduce((total, product) => total + product.quantity, 0);
-    const totalPrice = calculateTotalPrice();
+    const totalPrice = calculateTotalPrice(selectedProducts);
 
     // Generate a temporary order ID for shipping calculation
     const tempOrderId = 'TEMP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
@@ -1360,7 +1368,11 @@ document.querySelector('#order-review .back-btn').addEventListener('click', () =
 // Save contact info to localStorage as user types
 document.getElementById('name').addEventListener('input', saveContactInfoToStorage);
 document.getElementById('email').addEventListener('input', saveContactInfoToStorage);
-document.getElementById('address').addEventListener('input', saveContactInfoToStorage);
+document.getElementById('address_1').addEventListener('input', saveContactInfoToStorage);
+document.getElementById('city').addEventListener('input', saveContactInfoToStorage);
+document.getElementById('provinceCode').addEventListener('input', saveContactInfoToStorage);
+document.getElementById('postalCode').addEventListener('input', saveContactInfoToStorage);
+document.getElementById('country').addEventListener('input', saveContactInfoToStorage);
 document.getElementById('notes').addEventListener('input', saveContactInfoToStorage);
 
 

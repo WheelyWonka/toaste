@@ -72,6 +72,7 @@ function requestShippingRate(addressData, orderId = null) {
       address_1: addressData.address_1,
       city: addressData.city,
       country_code: addressData.country_code,
+      description: orderId ? `Order ${orderId}` : "Bike wheel covers",
       value: "40", // Base price per cover
       value_currency: "cad",
       package_type: "large_flat_rate_box",

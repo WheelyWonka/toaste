@@ -214,6 +214,7 @@ const PRICING = {
 
 // Track shipping calculation status
 let shippingCalculationFailed = false;
+let currentShipmentId = null;
 
 // Format wheel size for display
 function formatWheelSize(wheelSize) {
@@ -314,6 +315,10 @@ async function calculateShippingFee() {
         return;
     }
 
+    // Calculate number of covers and total price
+    const numberOfCovers = selectedProducts.reduce((total, product) => total + product.quantity, 0);
+    const totalPrice = calculateTotalPrice();
+
     // Generate a temporary order ID for shipping calculation
     const tempOrderId = 'TEMP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
 
@@ -323,7 +328,12 @@ async function calculateShippingFee() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ address: addressData, orderId: tempOrderId })
+            body: JSON.stringify({ 
+                address: addressData, 
+                orderId: tempOrderId,
+                numberOfCovers: numberOfCovers,
+                totalPrice: totalPrice
+            })
         });
 
         const result = await response.json();
@@ -331,6 +341,7 @@ async function calculateShippingFee() {
         if (result.success) {
             updateShippingDisplay(result.shippingCost, null);
             updateTotalWithShipping(result.shippingCost);
+            currentShipmentId = result.shipmentId; // Store shipment ID
             shippingCalculationFailed = false; // Reset flag on success
         } else {
             updateShippingDisplay(0, result.error || i18n.t('contactForm.shippingError'));
@@ -1283,7 +1294,8 @@ document.querySelector('#order-review .submit-btn').addEventListener('click', as
         },
         notes: document.getElementById('notes').value,
         language: localStorage.getItem('language') || navigator.language.split('-')[0],
-        shippingFee: shippingFee
+        shippingFee: shippingFee,
+        shipmentId: currentShipmentId
     };
 
     try {

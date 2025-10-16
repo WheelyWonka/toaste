@@ -60,13 +60,13 @@ function getCountryFromPostalCode(postalCode) {
 }
 
 // Make request to ChitChats API
-function requestShippingRate(addressData, orderId = null) {
+function requestShippingRate(addressData, orderId = null, numberOfCovers = 1, totalPrice = 40) {
   return new Promise((resolve, reject) => {
-    // Calculate required fields automatically
-    const numberOfCovers = 1; // Default to 1 cover for shipping calculation
-    const weight = 100 * numberOfCovers; // 100g per cover
-    const size_z = 3 + (0.5 * numberOfCovers); // 3cm base + 0.5cm per cover
-    const price = 45 * numberOfCovers;
+    // Use provided values or defaults
+    const covers = numberOfCovers || 1;
+    const price = totalPrice || 40;
+    const weight = 100 * covers; // 100g per cover
+    const size_z = 3 + (0.5 * covers); // 3cm base + 0.5cm per cover
     
     const postData = JSON.stringify({
       name: addressData.name,
@@ -74,16 +74,16 @@ function requestShippingRate(addressData, orderId = null) {
       city: addressData.city,
       country_code: addressData.country_code,
       description: orderId ? `Order ${orderId}` : "Bike wheel covers",
-      value: price, // Base price per cover
+      value: price.toString(), // Total price of the order
       value_currency: "cad",
-      package_type: "large_flat_rate_box",
+      package_type: "parcel",
       weight_unit: "g",
       weight: weight.toString(),
       size_unit: "cm",
       size_x: 63,
       size_y: 63,
       size_z: size_z,
-      postage_type: "chit_chats_canada_tracked", // Default to Canada tracked
+      postage_type: "chit_chats_select", // Default to Canada tracked
       ship_date: "today",
       ...(addressData.province_code && { province_code: addressData.province_code }),
       ...(addressData.postal_code && { postal_code: addressData.postal_code })
@@ -139,7 +139,7 @@ async function shippingHandler(event) {
 
   try {
     const body = JSON.parse(event.body);
-    const { address, orderId } = body;
+    const { address, orderId, numberOfCovers, totalPrice } = body;
 
     if (!address) {
       return createCorsResponse(400, event, { error: 'Address is required' });
@@ -163,17 +163,19 @@ async function shippingHandler(event) {
     }
 
     // Request shipping rate from ChitChats
-    const shippingResponse = await requestShippingRate(addressData, orderId);
+    const shippingResponse = await requestShippingRate(addressData, orderId, numberOfCovers, totalPrice);
 
-    // Extract shipping cost from response
-    const shippingCost = shippingResponse.postage_cost || 0;
+    // Extract shipping cost and shipment ID from response
+    const shippingCost = shippingResponse.shipment?.postage_fee || shippingResponse.postage_fee || 0;
+    const shipmentId = shippingResponse.shipment?.id || shippingResponse.id;
 
     return createCorsResponse(200, event, {
       success: true,
       shippingCost: parseFloat(shippingCost),
+      shipmentId: shipmentId,
       currency: 'CAD',
       address: addressData,
-      service: shippingResponse.postage_description || 'Standard Shipping'
+      service: shippingResponse.shipment?.postage_description || shippingResponse.postage_description || 'Standard Shipping'
     });
 
   } catch (error) {

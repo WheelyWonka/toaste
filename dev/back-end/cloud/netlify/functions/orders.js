@@ -52,7 +52,8 @@ async function ordersHandler(event, context) {
         shippingAddress,
         notes,
         language = 'en', // Default to English if not provided
-        shippingFee = 0 // Default to 0 if not provided
+        shippingFee = 0, // Default to 0 if not provided
+        shipmentId = null // Default to null if not provided
       } = body;
 
       // Validate required fields
@@ -149,6 +150,9 @@ async function ordersHandler(event, context) {
       const productSummary = productSummaryLines.join('\n') + `\n\nTOTAL: ${totalQuantity} covers`;
 
       // Create order record
+      // Create ChitChat link if shipmentId is provided
+      const chitChatLink = shipmentId ? `https://chitchats.com/clients/${process.env.CHITCHATS_CLIENT_ID}/shipments/${shipmentId}` : '';
+
       const orderRecord = {
         'Order Code': orderCode,
         'Customer Name': customerName,
@@ -160,7 +164,8 @@ async function ordersHandler(event, context) {
         'Total Price CAD': totalPrice,
         'Tax Amount CAD': totalTaxAmount,
         'Shipping Fee CAD': parseFloat(shippingFee),
-        'Product Summary': productSummary
+        'Product Summary': productSummary,
+        'ChitChat Link': chitChatLink
       };
 
       // Create order in Airtable

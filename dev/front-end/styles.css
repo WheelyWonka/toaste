@@ -1471,9 +1471,11 @@ input:hover, select:hover, textarea:hover {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    justify-content: end;
 }
 
 .loader {
+    display: inline-block;
     width: 16px;
     height: 16px;
     border: 2px solid var(--text-color);

@@ -69,6 +69,7 @@ function requestShippingRate(addressData, orderId = null, numberOfCovers = 1, to
     const size_z = 3 + (0.5 * covers); // 3cm base + 0.5cm per cover
     
     const postData = JSON.stringify({
+      package_contents: "gift",
       name: addressData.name,
       address_1: addressData.address_1,
       city: addressData.city,
@@ -83,8 +84,9 @@ function requestShippingRate(addressData, orderId = null, numberOfCovers = 1, to
       size_x: 63,
       size_y: 63,
       size_z: size_z,
-      postage_type: "chit_chats_select", // Default to Canada tracked
+      postage_type: "unknown", // Default to Canada tracked
       ship_date: "today",
+      cheapest_postage_type_requested: "yes",
       ...(addressData.province_code && { province_code: addressData.province_code }),
       ...(addressData.postal_code && { postal_code: addressData.postal_code })
     });

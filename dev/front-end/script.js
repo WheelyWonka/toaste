@@ -1249,7 +1249,6 @@ function updateReviewDisplay() {
         <div><strong>Shipping</strong></div>
         <div id="shipping-fee-price" class="shipping-loader">
             <span class="loader"></span>
-            <span class="loader-text">Calculating...</span>
         </div>
     `;
     reviewOrderItems.appendChild(shippingItem);

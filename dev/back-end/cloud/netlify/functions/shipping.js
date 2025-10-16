@@ -66,6 +66,7 @@ function requestShippingRate(addressData, orderId = null) {
     const numberOfCovers = 1; // Default to 1 cover for shipping calculation
     const weight = 100 * numberOfCovers; // 100g per cover
     const size_z = 3 + (0.5 * numberOfCovers); // 3cm base + 0.5cm per cover
+    const price = 40 * numberOfCovers;
     
     const postData = JSON.stringify({
       name: addressData.name,
@@ -73,14 +74,14 @@ function requestShippingRate(addressData, orderId = null) {
       city: addressData.city,
       country_code: addressData.country_code,
       description: orderId ? `Order ${orderId}` : "Bike wheel covers",
-      value: "40", // Base price per cover
+      value: price, // Base price per cover
       value_currency: "cad",
       package_type: "large_flat_rate_box",
       weight_unit: "g",
       weight: weight.toString(),
       size_unit: "cm",
-      size_x: 622,
-      size_y: 622,
+      size_x: 63,
+      size_y: 63,
       size_z: size_z,
       postage_type: "chit_chats_canada_tracked", // Default to Canada tracked
       ship_date: "today",

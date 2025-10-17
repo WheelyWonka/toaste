@@ -26,7 +26,7 @@ function requestShippingRate(addressData, numberOfCovers = 1, totalPrice = 40) {
       address_1: addressData.address_1,
       city: addressData.city,
       country_code: addressData.country_code,
-      description: `${numberOfCovers} Bike wheel covers`,
+      description: `Bike wheel covers`,
       value: price, // Total price of the order
       value_currency: "cad",
       package_type: "parcel",

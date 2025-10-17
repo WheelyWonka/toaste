@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             let isAnimating = false;
             
             // Different movement types
-            const movementTypes = ['jump', 'slide', 'shake', 'vibrate', 'wiggle'];
+            const movementTypes = ['shake', 'vibrate', 'wiggle'];
             
             // Hover event listeners on both toaster and logo container
             const logoContainer = document.querySelector('.logo-container');

@@ -54,7 +54,7 @@
       "required": "Entre ta ville"
     },
     "provinceCode": {
-      "label": "Code province/état (si applicable)\u00A0:",
+      "label": "Code province/état\u00A0:",
       "placeholder": "QC"
     },
     "postalCode": {
@@ -221,6 +221,9 @@
       "liberia": "Libéria",
       "ivorycoast": "Côte d'Ivoire",
       "nigeria": "Nigeria",
+      "other": "Autre",
+      "otherMessage": "Pour la livraison vers d'autres pays, contacte-nous directement par email.",
+      "contactEmail": "Email\u00A0:",
       "required": "Sélectionne ton pays"
     },
     "notes": {

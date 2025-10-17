@@ -33,8 +33,8 @@
   "contactForm": {
     "title": "Where do we ship that?",
     "fullName": {
-      "label": "Your Name:",
-      "placeholder": "What's your name?",
+      "label": "HEY, what's your name?",
+      "placeholder": "What is, your, name?",
       "required": "Please enter your name"
     },
     "email": {
@@ -54,7 +54,7 @@
       "required": "Please enter your city"
     },
     "provinceCode": {
-      "label": "Province/State Code (if applicable):",
+      "label": "Province/State Code:",
       "placeholder": "QC"
     },
     "postalCode": {
@@ -221,6 +221,9 @@
       "liberia": "Liberia",
       "ivorycoast": "Ivory Coast",
       "nigeria": "Nigeria",
+      "other": "Other",
+      "otherMessage": "For shipping to other countries, please contact us directly by email.",
+      "contactEmail": "Email:",
       "required": "Please select your country"
     },
     "notes": {

@@ -250,6 +250,8 @@ function getValidationMessages() {
             emailInvalid: 'Entre une adresse email valide',
             addressRequired: 'Entre ton adresse',
             cityRequired: 'Entre ta ville',
+            provinceRequired: 'Entre ton code de province/état',
+            postalCodeRequired: 'Entre ton code postal',
             countryRequired: 'Sélectionne ton pays'
         };
     } else {
@@ -259,6 +261,8 @@ function getValidationMessages() {
             emailInvalid: 'Please enter a valid email address',
             addressRequired: 'Please enter your address',
             cityRequired: 'Please enter your city',
+            provinceRequired: 'Please enter your province/state code',
+            postalCodeRequired: 'Please enter your postal code',
             countryRequired: 'Please select your country'
         };
     }
@@ -1046,6 +1050,24 @@ function validateForm() {
         clearFieldError('city');
     }
     
+    // Validate province code
+    const provinceCode = document.getElementById('provinceCode').value;
+    if (!provinceCode.trim()) {
+        showFieldError('provinceCode', messages.provinceRequired);
+        isValid = false;
+    } else {
+        clearFieldError('provinceCode');
+    }
+    
+    // Validate postal code
+    const postalCode = document.getElementById('postalCode').value;
+    if (!postalCode.trim()) {
+        showFieldError('postalCode', messages.postalCodeRequired);
+        isValid = false;
+    } else {
+        clearFieldError('postalCode');
+    }
+    
     if (!country.trim()) {
         showFieldError('country', messages.countryRequired);
         isValid = false;
@@ -1383,15 +1405,105 @@ document.querySelector('#order-review .back-btn').addEventListener('click', () =
 });
 
 // Save contact info to localStorage as user types
-document.getElementById('name').addEventListener('input', saveContactInfoToStorage);
+document.getElementById('name').addEventListener('input', function() {
+    saveContactInfoToStorage();
+    checkSpecialNames(this.value);
+});
 document.getElementById('email').addEventListener('input', saveContactInfoToStorage);
 document.getElementById('address_1').addEventListener('input', saveContactInfoToStorage);
 document.getElementById('city').addEventListener('input', saveContactInfoToStorage);
 document.getElementById('provinceCode').addEventListener('input', saveContactInfoToStorage);
 document.getElementById('postalCode').addEventListener('input', saveContactInfoToStorage);
 document.getElementById('country').addEventListener('input', saveContactInfoToStorage);
+document.getElementById('country').addEventListener('change', function() {
+    const otherMessage = document.getElementById('other-country-message');
+    const submitBtn = document.querySelector('#customer-form .submit-btn');
+    
+    if (this.value === 'OTHER') {
+        otherMessage.style.display = 'block';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor = 'not-allowed';
+    } else {
+        otherMessage.style.display = 'none';
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+    }
+});
 document.getElementById('notes').addEventListener('input', saveContactInfoToStorage);
 
+// Function to check and disable submit button if "Other" is selected
+function checkCountrySelection() {
+    const countrySelect = document.getElementById('country');
+    const otherMessage = document.getElementById('other-country-message');
+    const submitBtn = document.querySelector('#customer-form .submit-btn');
+    
+    if (countrySelect.value === 'OTHER') {
+        otherMessage.style.display = 'block';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor = 'not-allowed';
+    } else {
+        otherMessage.style.display = 'none';
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+    }
+}
+
+// Function to check for special names (Easter egg for English only)
+function checkSpecialNames(name) {
+    const currentLang = localStorage.getItem('language') || navigator.language.split('-')[0];
+    
+    // Only show Easter egg in English
+    if (currentLang !== 'en') {
+        hideSpecialNameMessage();
+        return;
+    }
+    
+    const trimmedName = name.trim().toLowerCase();
+    
+    if (trimmedName === 'tony' || trimmedName === 'ezekiel') {
+        showSpecialNameMessage(trimmedName);
+    } else {
+        hideSpecialNameMessage();
+    }
+}
+
+// Function to show special name message
+function showSpecialNameMessage(name) {
+    // Remove existing message if any
+    hideSpecialNameMessage();
+    
+    const nameField = document.getElementById('name');
+    const formGroup = nameField.closest('.form-group');
+    
+    // Create the special message element
+    const specialMessage = document.createElement('div');
+    specialMessage.id = 'special-name-message';
+    specialMessage.className = 'special-name-message';
+    specialMessage.innerHTML = `
+        <span>Fuck you ${name.charAt(0).toUpperCase() + name.slice(1)}!</span>
+        <span class="arrow">→</span>
+    `;
+    
+    // Add click event to open YouTube link
+    specialMessage.addEventListener('click', function() {
+        window.open('https://www.youtube.com/watch?v=jqFdeC7_0_w', '_blank');
+    });
+    
+    // Insert inside the form group, after the input field
+    formGroup.appendChild(specialMessage);
+}
+
+// Function to hide special name message
+function hideSpecialNameMessage() {
+    const existingMessage = document.getElementById('special-name-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+}
 
 // DEBUG: Function to show step 4 without API call
 window.showConfirmationDebug = function() {
@@ -1414,6 +1526,9 @@ window.showConfirmationDebug = function() {
 document.addEventListener('DOMContentLoaded', () => {
     loadCartFromStorage();
     loadContactInfoFromStorage();
+    
+    // Check if "Other" country is selected and disable button if needed
+    setTimeout(checkCountrySelection, 100);
     
     // Listen for language changes to update cart display and review
     window.addEventListener('languageChanged', () => {

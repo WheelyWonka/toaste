@@ -1624,6 +1624,71 @@ input:hover, select:hover, textarea:hover {
     text-align: center!important;
 }
 
+/* Other Country Message */
+.other-country-message {
+    margin: 0rem 0 2rem;
+}
+
+.message-box {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.message-box p {
+    margin: 0.5rem 0;
+    color: #856404;
+}
+
+.message-box a {
+    color: #2d2218;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.message-box a:hover {
+    color: #ffc107;
+}
+
+/* Disabled submit button */
+.submit-btn:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    pointer-events: none;
+}
+
+/* Special name message (Easter egg) */
+.special-name-message {
+    color: #ff8c00;
+    font-size: 0.875rem;
+    font-weight: bold;
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background-color: #fff4e6;
+    border: 2px solid #ff8c00;
+    box-shadow: 2px 2px 0 #ff8c00;
+    transform: rotate(-0.5deg);
+    font-family: 'FKRasterGrotesk', sans-serif;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.special-name-message:hover {
+    background-color: #ffedcc;
+    transform: rotate(-0.5deg) translateY(-1px);
+    box-shadow: 3px 3px 0 #ff8c00;
+}
+
+.special-name-message .arrow {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
 .error-modal-actions {
     margin-top: 1.5rem;
     text-align: center;

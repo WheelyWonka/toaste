@@ -861,6 +861,9 @@ class ToasterGame {
         document.getElementById('game-over-screen').classList.add('hidden');
         document.getElementById('game-overlay').classList.add('hidden');
         document.querySelector('.main-content').classList.remove('fade-out');
+        
+        // Remove game-active class from body for mobile
+        document.body.classList.remove('game-active');
     }
     
     // Helpers to ensure proper teardown and a clean restart
@@ -1084,6 +1087,9 @@ class GameActivator {
         setTimeout(() => {
             const gameOverlay = document.getElementById('game-overlay');
             gameOverlay.classList.remove('hidden');
+            
+            // Add game-active class to body for mobile
+            document.body.classList.add('game-active');
             
             // Initialize and start game
             if (!this.game) {

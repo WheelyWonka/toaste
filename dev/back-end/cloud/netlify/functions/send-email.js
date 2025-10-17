@@ -1,199 +1,175 @@
 // Using Resend API for reliable serverless email sending
 const { withCors, createCorsResponse } = require('./cors');
+const { log, handleAsyncError } = require('./utils');
 
-// Logging helper
-function log(level, message, data = null) {
-  const timestamp = new Date().toISOString();
-  const separator = '='.repeat(60);
-  
-  console.log(`\n${separator}`);
-  console.log(`[${timestamp}] [${level.toUpperCase()}] ${message}`);
-  if (data) {
-    console.log('Data:', JSON.stringify(data, null, 2));
+// Email templates (simplified)
+const EMAIL_TEMPLATES = {
+  customer: {
+    en: {
+      subject: (code) => `Your Toasté Bike Polo Order - ${code}`,
+      greeting: (name) => `Hi ${name},`,
+      title: 'Your Order Confirmation',
+      thankYou: 'Thank you for your order! Here are your order details:',
+      items: 'Your Items:',
+      costBreakdown: 'Cost Breakdown:',
+      paymentTitle: 'Payment Instructions',
+      paymentText: 'Send payment to: toastebikepolo@proton.me',
+      paymentNote: 'Canadians can use Interac, others can use PayPal.',
+      paymentWarning: '🚨 Don\'t forget to include your order code in the payment details!',
+      footer: 'We\'ll process your order as soon as we receive your payment.\n\nThanks for choosing Toasté Bike Polo!\n\nBest regards,\n\nGermain'
+    },
+    fr: {
+      subject: (code) => `Ta commande Toasté Bike Polo - ${code}`,
+      greeting: (name) => `Salut ${name},`,
+      title: 'Confirmation de votre commande',
+      thankYou: 'Merci pour ta commande ! Voici les détails :',
+      items: 'Tes articles :',
+      costBreakdown: 'Détail des coûts :',
+      paymentTitle: 'Instructions de paiement',
+      paymentText: 'Envoie ton paiement à : toastebikepolo@proton.me',
+      paymentNote: 'Les Canadien.nes peuvent utiliser Interac, les autres peuvent utiliser PayPal.',
+      paymentWarning: '🚨 N\'oublie pas d\'inclure ton code de commande dans les détails du paiement !',
+      footer: 'On va traiter ta commande dès qu\'on reçoit ton paiement.\nMerci d\'avoir choisi Toasté Bike Polo !\nSalutations,\nGermain'
+    }
+  },
+  owner: {
+    subject: (code) => `New Order Received - ${code}`,
+    title: 'New Order Received!',
+    customerInfo: 'Customer Information:',
+    orderItems: 'Order Items:',
+    costBreakdown: 'Cost Breakdown:',
+    orderDate: 'Order placed on:'
   }
-  console.log(separator);
+};
+
+// Generate email content (simplified)
+function getEmailContent(orderData, emailType, language = 'en') {
+  if (emailType === 'customer') {
+    const template = EMAIL_TEMPLATES.customer[language] || EMAIL_TEMPLATES.customer.en;
+    const spokeText = language === 'fr' ? 'rayons' : 'spokes';
+    
+    return {
+      from: 'Toasté Bike Polo <noreply@toastebikepolo.ca>',
+      to: orderData.customerEmail,
+      subject: template.subject(orderData.orderCode),
+      html: generateCustomerEmailHTML(orderData, template, spokeText)
+    };
+  } else if (emailType === 'owner') {
+    const template = EMAIL_TEMPLATES.owner;
+    
+    return {
+      from: 'Toasté Bike Polo <noreply@toastebikepolo.ca>',
+      to: process.env.PROTON_EMAIL,
+      subject: template.subject(orderData.orderCode),
+      html: generateOwnerEmailHTML(orderData, template)
+    };
+  }
+  
+  throw new Error('Invalid email type');
 }
 
-// Get email content based on language
-function getEmailContent(orderData, emailType, language = 'en') {
-    const isFrench = language === 'fr';
-    
-    if (emailType === 'customer') {
-        const subject = isFrench 
-            ? `Tacommande Toasté Bike Polo - ${orderData.orderCode}`
-            : `Your Toasté Bike Polo Order - ${orderData.orderCode}`;
-            
-        const html = isFrench ? `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <div style="text-align: center; margin-bottom: 10px; display:block; width: 100%; background-color: #efca52;">
-                   <img src="https://preprod.toastebikepolo.ca/assets/graphics/images/cover-mail.jpg" alt="Toasté Bike Polo Cover" style="width: 100%; height: auto; display: block; margin: 0 auto;">
-                </div>
-                <h2 style="color: #2d2218; text-align: center;">Confirmation de votre commande</h2>
-                <p>Salut ${orderData.customerName},</p>
-                <p>Merci pour ta commande ! Voici les détails :</p>
-                
-                <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
-                    <h3 style="margin-top: 0;">Code de commande : ${orderData.orderCode}</h3>
-                    <p style="margin-bottom:0;"><strong>Total : CAD$${orderData.total.toFixed(2)}</strong></p>
-                </div>
-                
-                <h3>Tes articles :</h3>
-                <ul>
-                    ${orderData.products.map(product => 
-                        `<li>${product.quantity}x ${product.spokeCount} rayons, ${product.wheelSize}" - CAD$${product.price.toFixed(2)}</li>`
-                    ).join('')}
-                </ul>
-                
-                <h3>Détail des coûts :</h3>
-                <div style="background: #f5f5f5; padding: 15px; border: 1px solid #ddd; margin: 10px 0;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span>Sous-total :</span>
-                        <span>CAD$${orderData.subtotal.toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span>Taxes (15%) :</span>
-                        <span>CAD$${orderData.taxes.toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span>Frais de livraison :</span>
-                        <span>CAD$${orderData.shippingFee.toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 1px solid #ccc; padding-top: 5px;">
-                        <span>Total :</span>
-                        <span>CAD$${orderData.total.toFixed(2)}</span>
-                    </div>
-                </div>
-                
-                <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
-                    <h3 style="margin-top: 0;">Instructions de paiement</h3>
-                    <p><strong>Envoie ton paiement à : toastebikepolo@proton.me</strong></p>
-                    <p>Les Canadien.nes peuvent utiliser Interac, les autres peuvent utiliser PayPal.</p>
-                    <p><strong>🚨 N'oublie pas d'inclure ton code de commande dans les détails du paiement !</strong></p>
-                </div>
-                
-                <p>On va traiter ta commande dès qu'on reçoit ton paiement.</p>
-                <p>Merci d'avoir choisi Toasté Bike Polo !</p>
-                <p>Salutations,<br>Germain</p>
-            </div>
-        ` : `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <div style="text-align: center; margin-bottom: 10px; display:block; width: 100%; background-color: #efca52;">
-                   <img src="https://preprod.toastebikepolo.ca/assets/graphics/images/cover-mail.jpg" alt="Toasté Bike Polo Cover" style="width: 100%; height: auto; display: block; margin: 0 auto;">
-                </div>
-                <h2 style="color: #2d2218; text-align: center;">Your Order Confirmation</h2>
-                <p>Hi ${orderData.customerName},</p>
-                <p>Thank you for your order! Here are your order details:</p>
-                
-                <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
-                    <h3 style="margin-top: 0;">Order Code: ${orderData.orderCode}</h3>
-                    <p style="margin-bottom:0;"><strong>Total: CAD$${orderData.total.toFixed(2)}</strong></p>
-                </div>
-                
-                <h3>Your Items:</h3>
-                <ul>
-                    ${orderData.products.map(product => 
-                        `<li>${product.quantity}x ${product.spokeCount} spokes, ${product.wheelSize}" - CAD$${product.price.toFixed(2)}</li>`
-                    ).join('')}
-                </ul>
-                
-                <h3>Cost Breakdown:</h3>
-                <div style="background: #f5f5f5; padding: 15px; border: 1px solid #ddd; margin: 10px 0;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span>Subtotal:</span>
-                        <span>CAD$${orderData.subtotal.toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span>Taxes (15%):</span>
-                        <span>CAD$${orderData.taxes.toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span>Shipping:</span>
-                        <span>CAD$${orderData.shippingFee.toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 1px solid #ccc; padding-top: 5px;">
-                        <span>Total:</span>
-                        <span>CAD$${orderData.total.toFixed(2)}</span>
-                    </div>
-                </div>
-                
-                <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
-                    <h3 style="margin-top: 0;">Payment Instructions</h3>
-                    <p><strong>Send payment to: toastebikepolo@proton.me</strong></p>
-                    <p>Canadians can use Interac, others can use PayPal.</p>
-                    <p><strong>🚨 Don't forget to include your order code in the payment details!</strong></p>
-                </div>
-                
-                <p>We'll process your order as soon as we receive your payment.</p>
-                <p>Thanks for choosing Toasté Bike Polo!</p>
-                <p>Best regards,<br>Germain</p>
-            </div>
-        `;
-        
-        return {
-            from: 'Toasté Bike Polo <noreply@toastebikepolo.ca>',
-            to: orderData.customerEmail,
-            subject: subject,
-            html: html
-        };
-    } else if (emailType === 'owner') {
-        // Owner emails are always in English for internal use
-        const subject = `New Order Received - ${orderData.orderCode}`;
-            
-        const html = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #2d2218;">New Order Received!</h2>
-                
-                <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
-                    <h3 style="margin-top: 0;">Order Code: ${orderData.orderCode}</h3>
-                    <p><strong>Total: CAD$${orderData.total.toFixed(2)}</strong></p>
-                </div>
-                
-                <h3>Customer Information:</h3>
-                <p><strong>Name:</strong> ${orderData.customerName}</p>
-                <p><strong>Email:</strong> ${orderData.customerEmail}</p>
-                <p><strong>Address:</strong> ${orderData.customerAddress}</p>
-                ${orderData.customerNotes ? `<p><strong>Notes:</strong> ${orderData.customerNotes}</p>` : ''}
-                
-                <h3>Order Items:</h3>
-                <ul>
-                    ${orderData.products.map(product => 
-                        `<li>${product.quantity}x ${product.spokeCount} spokes, ${product.wheelSize}" - CAD$${product.price.toFixed(2)}</li>`
-                    ).join('')}
-                </ul>
-                
-                <h3>Cost Breakdown:</h3>
-                <div style="background: #f5f5f5; padding: 15px; border: 1px solid #ddd; margin: 10px 0;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span>Subtotal:</span>
-                        <span>CAD$${orderData.subtotal.toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span>Taxes (15%):</span>
-                        <span>CAD$${orderData.taxes.toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span>Shipping:</span>
-                        <span>CAD$${orderData.shippingFee.toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 1px solid #ccc; padding-top: 5px;">
-                        <span>Total:</span>
-                        <span>CAD$${orderData.total.toFixed(2)}</span>
-                    </div>
-                </div>
-                
-                <p>Order placed on: ${new Date().toLocaleString()}</p>
-            </div>
-        `;
-        
-        return {
-            from: 'Toasté Bike Polo <noreply@toastebikepolo.ca>',
-            to: process.env.PROTON_EMAIL,
-            subject: subject,
-            html: html
-        };
-    }
-    
-    throw new Error('Invalid email type');
+// Generate customer email HTML (simplified)
+function generateCustomerEmailHTML(orderData, template, spokeText) {
+  const productsList = orderData.products.map(product => 
+    `<li>${product.quantity}x ${product.spokeCount} ${spokeText}, ${product.wheelSize}" - CAD$${product.price.toFixed(2)}</li>`
+  ).join('');
+  
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="text-align: center; margin-bottom: 10px; background-color: #efca52;">
+        <img src="https://preprod.toastebikepolo.ca/assets/graphics/images/cover-mail.jpg" alt="Toasté Bike Polo Cover" style="width: 100%; height: auto; display: block;">
+      </div>
+      <h2 style="color: #2d2218; text-align: center;">${template.title}</h2>
+      <p>${template.greeting(orderData.customerName)}</p>
+      <p>${template.thankYou}</p>
+      
+      <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
+        <h3 style="margin-top: 0;">Order Code: ${orderData.orderCode}</h3>
+        <p style="margin-bottom:0;"><strong>Total: CAD$${orderData.total.toFixed(2)}</strong></p>
+      </div>
+      
+      <h3>${template.items}</h3>
+      <ul>${productsList}</ul>
+      
+      <h3>${template.costBreakdown}</h3>
+      <div style="background: #f5f5f5; padding: 15px; border: 1px solid #ddd; margin: 10px 0;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+          <span>Subtotal:</span>
+          <span>CAD$${orderData.subtotal.toFixed(2)}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+          <span>Taxes (15%):</span>
+          <span>CAD$${orderData.taxes.toFixed(2)}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+          <span>Shipping:</span>
+          <span>CAD$${orderData.shippingFee.toFixed(2)}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 1px solid #ccc; padding-top: 5px;">
+          <span>Total:</span>
+          <span>CAD$${orderData.total.toFixed(2)}</span>
+        </div>
+      </div>
+      
+      <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
+        <h3 style="margin-top: 0;">${template.paymentTitle}</h3>
+        <p><strong>${template.paymentText}</strong></p>
+        <p>${template.paymentNote}</p>
+        <p><strong>${template.paymentWarning}</strong></p>
+      </div>
+      
+      <p>${template.footer.replace(/\n/g, '<br>')}</p>
+    </div>
+  `;
+}
+
+// Generate owner email HTML (simplified)
+function generateOwnerEmailHTML(orderData, template) {
+  const productsList = orderData.products.map(product => 
+    `<li>${product.quantity}x ${product.spokeCount} spokes, ${product.wheelSize}" - CAD$${product.price.toFixed(2)}</li>`
+  ).join('');
+  
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #2d2218;">${template.title}</h2>
+      
+      <div style="background: #efca52; padding: 20px; border: 3px solid #2d2218; margin: 20px 0;">
+        <h3 style="margin-top: 0;">Order Code: ${orderData.orderCode}</h3>
+        <p><strong>Total: CAD$${orderData.total.toFixed(2)}</strong></p>
+      </div>
+      
+      <h3>${template.customerInfo}</h3>
+      <p><strong>Name:</strong> ${orderData.customerName}</p>
+      <p><strong>Email:</strong> ${orderData.customerEmail}</p>
+      <p><strong>Address:</strong> ${orderData.customerAddress}</p>
+      ${orderData.customerNotes ? `<p><strong>Notes:</strong> ${orderData.customerNotes}</p>` : ''}
+      
+      <h3>${template.orderItems}</h3>
+      <ul>${productsList}</ul>
+      
+      <h3>${template.costBreakdown}</h3>
+      <div style="background: #f5f5f5; padding: 15px; border: 1px solid #ddd; margin: 10px 0;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+          <span>Subtotal:</span>
+          <span>CAD$${orderData.subtotal.toFixed(2)}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+          <span>Taxes (15%):</span>
+          <span>CAD$${orderData.taxes.toFixed(2)}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+          <span>Shipping:</span>
+          <span>CAD$${orderData.shippingFee.toFixed(2)}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 1px solid #ccc; padding-top: 5px;">
+          <span>Total:</span>
+          <span>CAD$${orderData.total.toFixed(2)}</span>
+        </div>
+      </div>
+      
+      <p>${template.orderDate} ${new Date().toLocaleString()}</p>
+    </div>
+  `;
 }
 
 // Function to send email via Resend API
@@ -303,16 +279,7 @@ async function emailHandler(event, context) {
         });
 
     } catch (error) {
-        console.error('❌ ERROR SENDING EMAIL:', error);
-        console.error('Error name:', error.name);
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-        
-        return createCorsResponse(500, event, { 
-            error: 'Failed to send email',
-            details: error.message,
-            errorType: error.name
-        });
+        return handleAsyncError(error, event, 'Email sending');
     }
 }
 

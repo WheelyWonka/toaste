@@ -1,55 +1,60 @@
 const Airtable = require('airtable');
 const { withCors, createCorsResponse } = require('./cors');
+const { 
+  log, 
+  validateRequiredFields, 
+  validateAddress, 
+  validateProduct, 
+  generateOrderCode, 
+  calculatePricing, 
+  formatAddress, 
+  createAirtableRecord,
+  handleAsyncError 
+} = require('./utils');
 
-// Logging helper
-function log(level, message, data = null) {
-  const timestamp = new Date().toISOString();
-  const separator = '='.repeat(60);
-  
-  console.log(`\n${separator}`);
-  console.log(`[${timestamp}] [${level.toUpperCase()}] ${message}`);
-  if (data) {
-    console.log('Data:', JSON.stringify(data, null, 2));
-  }
-  console.log(separator);
-}
-
-// Initialize Airtable (moved inside handler to avoid issues with OPTIONS requests)
+// Initialize Airtable
 function getAirtableBase() {
   return new Airtable({
     apiKey: process.env.AIRTABLE_PAT
   }).base(process.env.AIRTABLE_BASE_ID);
 }
 
-// Generate random order code
-function generateOrderCode() {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  const codeLength = 8;
-  let code = '';
-  for (let i = 0; i < codeLength; i++) {
-    code += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return code;
-}
-
-// Calculate pricing
-function calculatePricing(quantity) {
-  const basePrice = 40; // $40 CAD per cover
-  const taxRate = 0.15; // 15% Quebec tax
-  
-  // Apply 5% discount for pairs (2+ covers of same configuration)
-  const discountRate = quantity >= 2 ? 0.05 : 0;
-  const subtotal = basePrice * quantity * (1 - discountRate);
-  const taxAmount = subtotal * taxRate;
-  const totalPrice = subtotal + taxAmount;
-  
-  return {
-    basePrice,
-    subtotal,
-    taxAmount,
-    totalPrice,
-    discountApplied: discountRate > 0
+// Send email notifications (simplified)
+async function sendEmailNotifications(orderData) {
+  const emailData = {
+    orderCode: orderData.orderCode,
+    customerName: orderData.customerName,
+    customerEmail: orderData.customerEmail,
+    customerAddress: orderData.formattedAddress,
+    customerNotes: orderData.notes || '',
+    language: orderData.language,
+    products: orderData.products.map(product => ({
+      quantity: product.quantity,
+      spokeCount: product.spokeCount,
+      wheelSize: product.wheelSize,
+      price: product.quantity * product.unitPrice
+    })),
+    subtotal: orderData.totalSubtotal,
+    taxes: orderData.totalTaxAmount,
+    shippingFee: parseFloat(orderData.shippingFee),
+    total: orderData.totalPrice
   };
+
+  const baseUrl = process.env.URL || 'https://toastebikepolo.netlify.app';
+  
+  // Send both emails in parallel
+  await Promise.all([
+    fetch(`${baseUrl}/.netlify/functions/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderData: emailData, emailType: 'customer' })
+    }),
+    fetch(`${baseUrl}/.netlify/functions/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderData: emailData, emailType: 'owner' })
+    })
+  ]);
 }
 
 // Main orders handler
@@ -87,73 +92,22 @@ async function ordersHandler(event, context) {
       });
 
       // Validate required fields
-      if (!products || !Array.isArray(products) || products.length === 0 || !customerName || !customerEmail || !shippingAddress) {
-        log('WARN', 'Missing required fields', {
-          hasProducts: !!products,
-          isProductsArray: Array.isArray(products),
-          productsLength: products?.length,
-          hasCustomerName: !!customerName,
-          hasCustomerEmail: !!customerEmail,
-          hasShippingAddress: !!shippingAddress
-        });
-        return createCorsResponse(400, event, {
-          error: 'Missing required fields',
-          required: ['products', 'customerName', 'customerEmail', 'shippingAddress']
-        });
-      }
-
-      // Validate address structure
-      if (!shippingAddress.name || !shippingAddress.address_1 || !shippingAddress.city || !shippingAddress.country_code) {
-        log('WARN', 'Incomplete address structure', { shippingAddress });
-        return createCorsResponse(400, event, {
-          error: 'Incomplete address. Please provide name, address, city, and country.'
-        });
+      try {
+        validateRequiredFields(body, ['products', 'customerName', 'customerEmail', 'shippingAddress'], 'order');
+        if (!Array.isArray(products) || products.length === 0) {
+          throw new Error('Products must be a non-empty array');
+        }
+        validateAddress(shippingAddress);
+        
+        // Validate each product
+        products.forEach(validateProduct);
+      } catch (error) {
+        log('WARN', 'Validation failed', { error: error.message });
+        return createCorsResponse(400, event, { error: error.message });
       }
 
       // Format address for storage
-      let formattedAddress = `${shippingAddress.address_1}, ${shippingAddress.city}`;
-      if (shippingAddress.province_code) {
-        formattedAddress += `, ${shippingAddress.province_code}`;
-      }
-      if (shippingAddress.postal_code) {
-        formattedAddress += `, ${shippingAddress.postal_code}`;
-      }
-      formattedAddress += `, ${shippingAddress.country_code}`;
-
-      // Validate each product
-      for (let i = 0; i < products.length; i++) {
-        const product = products[i];
-        if (!product.spokeCount || !product.wheelSize || !product.quantity) {
-          return createCorsResponse(400, event, {
-            error: `Product ${i + 1} is missing required fields`,
-            required: ['spokeCount', 'wheelSize', 'quantity']
-          });
-        }
-
-        // Validate spoke count
-        if (!['32', '36'].includes(product.spokeCount.toString())) {
-          return createCorsResponse(400, event, {
-            error: `Product ${i + 1}: Invalid spoke count`,
-            validValues: ['32', '36']
-          });
-        }
-
-        // Validate wheel size
-        if (!['26', '650b', '700'].includes(product.wheelSize)) {
-          return createCorsResponse(400, event, {
-            error: `Product ${i + 1}: Invalid wheel size`,
-            validValues: ['26', '650b', '700']
-          });
-        }
-
-        // Validate quantity
-        if (product.quantity < 1 || product.quantity > 10) {
-          return createCorsResponse(400, event, {
-            error: `Product ${i + 1}: Invalid quantity`,
-            validRange: '1-10'
-          });
-        }
-      }
+      const formattedAddress = formatAddress(shippingAddress);
 
       // Generate order code
       const orderCode = generateOrderCode();
@@ -208,18 +162,7 @@ async function ordersHandler(event, context) {
       };
 
       // Create order in Airtable
-      log('INFO', 'Creating order in Airtable', { orderRecord });
-      const orderResult = await new Promise((resolve, reject) => {
-        getAirtableBase()('Orders').create(orderRecord, (err, record) => {
-          if (err) {
-            log('ERROR', 'Failed to create order in Airtable', { error: err.message });
-            reject(err);
-          } else {
-            log('INFO', 'Order created successfully in Airtable', { orderId: record.id });
-            resolve(record);
-          }
-        });
-      });
+      const orderResult = await createAirtableRecord(getAirtableBase(), 'Orders', orderRecord);
 
       // Create order items in Airtable
       const orderItems = [];
@@ -232,19 +175,7 @@ async function ordersHandler(event, context) {
           'Unit Price CAD': product.unitPrice
         };
 
-        log('INFO', 'Creating order item in Airtable', { orderItemRecord });
-        const orderItemResult = await new Promise((resolve, reject) => {
-          getAirtableBase()('Order Items').create(orderItemRecord, (err, record) => {
-            if (err) {
-              log('ERROR', 'Failed to create order item in Airtable', { error: err.message, orderItemRecord });
-              reject(err);
-            } else {
-              log('INFO', 'Order item created successfully in Airtable', { itemId: record.id });
-              resolve(record);
-            }
-          });
-        });
-
+        await createAirtableRecord(getAirtableBase(), 'Order Items', orderItemRecord);
         orderItems.push({
           spokeCount: product.spokeCount,
           wheelSize: product.wheelSize,
@@ -254,65 +185,14 @@ async function ordersHandler(event, context) {
         });
       }
 
-      // Send email notifications
-      try {
-        console.log('=== PREPARING EMAIL NOTIFICATIONS ===');
-        const emailData = {
-          orderCode: orderCode,
-          customerName: customerName,
-          customerEmail: customerEmail,
-          customerAddress: formattedAddress,
-          customerNotes: notes || '',
-          language: language,
-          products: productDetails.map(product => ({
-            quantity: product.quantity,
-            spokeCount: product.spokeCount,
-            wheelSize: product.wheelSize,
-            price: product.quantity * product.unitPrice
-          })),
-          subtotal: totalSubtotal,
-          taxes: totalTaxAmount,
-          shippingFee: parseFloat(shippingFee),
-          total: totalPrice
-        };
-        
-        console.log('Email data prepared:', JSON.stringify(emailData, null, 2));
-
-        // Send customer confirmation email
-        console.log('Sending customer confirmation email...');
-        const customerEmailResponse = await fetch(`${process.env.URL || 'https://toastebikepolo.netlify.app'}/.netlify/functions/send-email`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            orderData: emailData,
-            emailType: 'customer'
-          })
-        });
-        
-        const customerEmailResult = await customerEmailResponse.json();
-        console.log('Customer email response:', customerEmailResult);
-
-        // Send owner notification email
-        console.log('Sending owner notification email...');
-        const ownerEmailResponse = await fetch(`${process.env.URL || 'https://toastebikepolo.netlify.app'}/.netlify/functions/send-email`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            orderData: emailData,
-            emailType: 'owner'
-          })
-        });
-        
-        const ownerEmailResult = await ownerEmailResponse.json();
-        console.log('Owner email response:', ownerEmailResult);
-      } catch (emailError) {
-        console.error('Error sending emails:', emailError);
+      // Send email notifications (non-blocking)
+      sendEmailNotifications({
+        orderCode, customerName, customerEmail, formattedAddress, notes, language,
+        products: productDetails, totalSubtotal, totalTaxAmount, shippingFee, totalPrice
+      }).catch(error => {
+        log('WARN', 'Email notifications failed', { error: error.message });
         // Don't fail the order if email fails
-      }
+      });
 
       // Return success response
       return createCorsResponse(201, event, {
@@ -336,68 +216,6 @@ async function ordersHandler(event, context) {
         }
       });
 
-    } else if (event.httpMethod === 'GET') {
-      // Get order by order code
-      const { orderCode } = event.queryStringParameters || {};
-
-      if (!orderCode) {
-        return createCorsResponse(400, event, {
-          error: 'Order code is required'
-        });
-      }
-
-      // Find order by order code
-      const orders = await new Promise((resolve, reject) => {
-        getAirtableBase()('Orders').select({
-          filterByFormula: `{Order Code} = "${orderCode}"`
-        }).firstPage((err, records) => {
-          if (err) reject(err);
-          else resolve(records);
-        });
-      });
-
-      if (orders.length === 0) {
-        return createCorsResponse(404, event, {
-          error: 'Order not found',
-          orderCode
-        });
-      }
-
-      const order = orders[0];
-
-      // Get order items
-      const orderItems = await new Promise((resolve, reject) => {
-        getAirtableBase()('Order Items').select({
-          filterByFormula: `{Order} = "${order.id}"`
-        }).firstPage((err, records) => {
-          if (err) reject(err);
-          else resolve(records);
-        });
-      });
-
-
-      return createCorsResponse(200, event, {
-        success: true,
-        order: {
-          id: order.id,
-          orderCode: order.fields['Order Code'],
-          customerName: order.fields['Customer Name'],
-          customerEmail: order.fields['Customer Email'],
-          shippingAddress: order.fields['Shipping Address'],
-          notes: order.fields['Notes'],
-          orderDate: order.fields['Order Date'],
-          status: order.fields['Status'],
-          totalPrice: order.fields['Total Price CAD'],
-          taxAmount: order.fields['Tax Amount CAD'],
-          items: orderItems.map(item => ({
-            spokeCount: item.fields['Spoke Count'],
-            wheelSize: item.fields['Wheel Size'],
-            quantity: item.fields['Quantity'],
-            unitPrice: item.fields['Unit Price CAD']
-          }))
-        }
-      });
-
     } else {
       return createCorsResponse(405, event, {
         error: 'Method not allowed'
@@ -405,11 +223,7 @@ async function ordersHandler(event, context) {
     }
 
   } catch (error) {
-    console.error('Error:', error);
-    return createCorsResponse(500, event, {
-      error: 'Internal server error',
-      message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
-    });
+    return handleAsyncError(error, event, 'Order processing');
   }
 }
 

@@ -4,7 +4,7 @@ const { withCors, createCorsResponse } = require('./cors');
 const { log, validateAddress } = require('./utils');
 
 // Make request to ChitChats API
-function requestShippingRate(addressData, numberOfCovers = 1, totalPrice = 40) {
+function requestShippingRate(addressData, numberOfCovers = 1, totalPrice = 40, orderId = null) {
   return new Promise((resolve, reject) => {
     // Use provided values or defaults
     const covers = numberOfCovers || 1;
@@ -17,6 +17,7 @@ function requestShippingRate(addressData, numberOfCovers = 1, totalPrice = 40) {
       price,
       weight,
       size_z,
+      orderId,
       addressData
     });
     
@@ -39,6 +40,7 @@ function requestShippingRate(addressData, numberOfCovers = 1, totalPrice = 40) {
       postage_type: "unknown", // Default to Canada tracked
       ship_date: "today",
       cheapest_postage_type_requested: "yes",
+      ...(orderId && { order_id: orderId }),
       ...(addressData.province_code && { province_code: addressData.province_code }),
       ...(addressData.postal_code && { postal_code: addressData.postal_code })
     });
@@ -125,12 +127,13 @@ async function shippingHandler(event) {
 
   try {
     const body = JSON.parse(event.body);
-    const { address, numberOfCovers, totalPrice } = body;
+    const { address, numberOfCovers, totalPrice, orderId } = body;
     
     log('INFO', 'Request body parsed', {
       hasAddress: !!address,
       numberOfCovers,
       totalPrice,
+      orderId,
       addressKeys: address ? Object.keys(address) : []
     });
 
@@ -159,11 +162,12 @@ async function shippingHandler(event) {
     log('INFO', 'Requesting shipping rate from ChitChats', {
       addressData,
       numberOfCovers,
-      totalPrice: totalPrice?.total
+      totalPrice: totalPrice?.total,
+      orderId
     });
 
     // Request shipping rate from ChitChats
-    const shippingResponse = await requestShippingRate(addressData, numberOfCovers, totalPrice?.total);
+    const shippingResponse = await requestShippingRate(addressData, numberOfCovers, totalPrice?.total, orderId);
 
     log('INFO', 'ChitChats API response received', {
       hasShipment: !!shippingResponse.shipment,

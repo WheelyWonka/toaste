@@ -223,6 +223,7 @@ const PRICING = {
 // Track shipping calculation status
 let shippingCalculationFailed = false;
 let currentShipmentId = null;
+let currentOrderId = null;
 
 // Format wheel size for display
 function formatWheelSize(wheelSize) {
@@ -328,6 +329,24 @@ async function calculateShippingFee() {
     const totalPrice = calculateTotalPrice(selectedProducts);
 
     try {
+        // Step 1: Generate unique order ID
+        const orderIdResponse = await fetch(`${API_CONFIG.baseUrl}/generate-order-id`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({})
+        });
+
+        const orderIdResult = await orderIdResponse.json();
+        if (!orderIdResult.success) {
+            throw new Error('Failed to generate order ID');
+        }
+
+        const orderId = orderIdResult.orderId;
+        currentOrderId = orderId; // Store order ID for later use
+
+        // Step 2: Request shipping rate with order ID
         const response = await fetch(`${API_CONFIG.baseUrl}/shipping`, {
             method: 'POST',
             headers: {
@@ -336,7 +355,8 @@ async function calculateShippingFee() {
             body: JSON.stringify({ 
                 address: addressData, 
                 numberOfCovers: numberOfCovers,
-                totalPrice: totalPrice
+                totalPrice: totalPrice,
+                orderId: orderId // Include order ID in shipping request
             })
         });
 
@@ -1298,7 +1318,8 @@ document.querySelector('#order-review .submit-btn').addEventListener('click', as
         notes: document.getElementById('notes').value,
         language: localStorage.getItem('language') || navigator.language.split('-')[0],
         shippingFee: shippingFee,
-        shipmentId: currentShipmentId
+        shipmentId: currentShipmentId,
+        orderId: currentOrderId
     };
 
     try {

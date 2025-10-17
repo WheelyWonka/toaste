@@ -77,7 +77,8 @@ async function ordersHandler(event, context) {
         notes,
         language = 'en', // Default to English if not provided
         shippingFee = 0, // Default to 0 if not provided
-        shipmentId = null // Default to null if not provided
+        shipmentId = null, // Default to null if not provided
+        orderId = null // Default to null if not provided
       } = body;
 
       log('INFO', 'Order request body parsed', {
@@ -88,6 +89,7 @@ async function ordersHandler(event, context) {
         hasShippingAddress: !!shippingAddress,
         shippingFee,
         shipmentId,
+        orderId,
         language
       });
 
@@ -109,8 +111,8 @@ async function ordersHandler(event, context) {
       // Format address for storage
       const formattedAddress = formatAddress(shippingAddress);
 
-      // Generate order code
-      const orderCode = generateOrderCode();
+      // Use provided order ID or generate a new one
+      const orderCode = orderId || generateOrderCode();
       
       // Calculate total pricing for all products
       let totalQuantity = 0;

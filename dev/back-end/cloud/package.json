@@ -9,6 +9,7 @@
     "setup": "./scripts/setup-dev.sh",
     "start": "./scripts/start-dev.sh",
     "test": "./scripts/test-functions.sh",
+    "test:generate-order-id": "./scripts/test-generate-order-id.sh",
     "test:shipping": "./scripts/test-shipping.sh",
     "test:orders": "./scripts/test-orders.sh",
     "kill": "./scripts/kill-dev.sh"

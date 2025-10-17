@@ -17,10 +17,22 @@ Frontend (GitHub Pages) → Netlify Functions → Airtable API → Database
 ## 📡 Available Functions
 
 - **`health.js`** - Health check endpoint
-- **`shipping.js`** - Calculate shipping costs using ChitChats API
+- **`generate-order-id.js`** - Generate unique order IDs for new orders
+- **`shipping.js`** - Create shipments and calculate shipping costs using ChitChats API
 - **`orders.js`** - Create orders and store in Airtable
 - **`send-email.js`** - Send confirmation emails via SendGrid
 - **`cors.js`** - Shared CORS utility for all functions
+- **`utils.js`** - Shared utilities for all functions
+
+## 🔄 Order Processing Workflow
+
+The correct sequence for processing orders is:
+
+1. **Generate Order ID** → `POST /generate-order-id` (creates unique order ID)
+2. **Create Shipment** → `POST /shipping` (creates shipment in ChitChats with order ID)
+3. **Create Order** → `POST /orders` (stores order in Airtable with same order ID)
+
+**Important**: The ChitChats API creates an actual shipment when requesting shipping rates, so the order ID must be generated **before** the shipping request.
 
 ## 🚀 Quick Setup Guide
 
@@ -280,6 +292,7 @@ This project includes scripts to help you develop and test locally without consu
 When the development server is running on `http://localhost:8889`, these endpoints are available:
 
 - **Health Check**: `http://localhost:8889/.netlify/functions/health`
+- **Generate Order ID**: `http://localhost:8889/.netlify/functions/generate-order-id`
 - **Shipping**: `http://localhost:8889/.netlify/functions/shipping`
 - **Orders**: `http://localhost:8889/.netlify/functions/orders`
 - **Send Email**: `http://localhost:8889/.netlify/functions/send-email`

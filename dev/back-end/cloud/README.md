@@ -20,6 +20,7 @@ Frontend (GitHub Pages) → Netlify Functions → Airtable API → Database
 - **`generate-order-id.js`** - Generate unique order IDs for new orders
 - **`shipping.js`** - Create shipments and calculate shipping costs using ChitChats API
 - **`orders.js`** - Create orders and store in Airtable
+- **`get-order.js`** - Retrieve order details by order ID from Airtable
 - **`send-email.js`** - Send confirmation emails via SendGrid
 - **`cors.js`** - Shared CORS utility for all functions
 - **`utils.js`** - Shared utilities for all functions
@@ -295,6 +296,7 @@ When the development server is running on `http://localhost:8889`, these endpoin
 - **Generate Order ID**: `http://localhost:8889/.netlify/functions/generate-order-id`
 - **Shipping**: `http://localhost:8889/.netlify/functions/shipping`
 - **Orders**: `http://localhost:8889/.netlify/functions/orders`
+- **Get Order**: `http://localhost:8889/.netlify/functions/get-order/{orderId}`
 - **Send Email**: `http://localhost:8889/.netlify/functions/send-email`
 
 #### Environment Variables for Local Development

@@ -291,5 +291,41 @@
   "instagram": {
     "title": "Suis-nous sur le Gram'",
     "handle": "@toastebikepolo"
+  },
+  "orderStatus": {
+    "title": "Statut de la commande",
+    "loading": "Chargement des détails de la commande...",
+    "customerInfo": "Tes infos",
+    "customerName": "Nom\u00A0:",
+    "customerEmail": "Email\u00A0:",
+    "shippingAddress": "Adresse\u00A0:",
+    "orderDetails": "Ta commande",
+    "costBreakdown": "Détail des coûts",
+    "subtotal": "Sous-total\u00A0:",
+    "taxes": "Taxes (15%)\u00A0:",
+    "shipping": "Livraison\u00A0:",
+    "total": "Total\u00A0:",
+    "notes": "Notes",
+    "tracking": "Suivi",
+    "error": "Commande introuvable ou erreur lors du chargement des détails.",
+    "close": "Fermer",
+    "status": {
+      "waiting_for_payment": "En attente de paiement",
+      "payment_received": "Paiement reçu",
+      "processing": "En cours de traitement",
+      "shipped": "Expédié",
+      "delivered": "Livré",
+      "cancelled": "Annulé",
+      "pending": "En attente"
+    },
+    "statusDescription": {
+      "waiting_for_payment": "On attend ton paiement pour traiter ta commande.",
+      "payment_received": "Paiement reçu\u00A0! On prépare ta commande.",
+      "processing": "Ta commande est en cours de préparation pour l'expédition.",
+      "shipped": "Ta commande a été expédiée et est en route\u00A0!",
+      "delivered": "Ta commande a été livrée avec succès.",
+      "cancelled": "Cette commande a été annulée.",
+      "pending": "Ta commande est en cours de traitement."
+    }
   }
 } 

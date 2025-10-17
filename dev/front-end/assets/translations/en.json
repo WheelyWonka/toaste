@@ -291,5 +291,41 @@
   "instagram": {
     "title": "Follow us on the Gram'",
     "handle": "@toastebikepolo"
+  },
+  "orderStatus": {
+    "title": "Order Status",
+    "loading": "Loading order details...",
+    "customerInfo": "Your Info",
+    "customerName": "Name:",
+    "customerEmail": "Email:",
+    "shippingAddress": "Address:",
+    "orderDetails": "Your Order",
+    "costBreakdown": "Cost Breakdown",
+    "subtotal": "Subtotal:",
+    "taxes": "Taxes (15%):",
+    "shipping": "Shipping:",
+    "total": "Total:",
+    "notes": "Notes",
+    "tracking": "Tracking",
+    "error": "Order not found or error loading order details.",
+    "close": "Close",
+    "status": {
+      "waiting_for_payment": "Waiting for payment",
+      "payment_received": "Payment received",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "pending": "Pending"
+    },
+    "statusDescription": {
+      "waiting_for_payment": "We're waiting for your payment to process your order.",
+      "payment_received": "Payment received! We're preparing your order.",
+      "processing": "Your order is being prepared for shipping.",
+      "shipped": "Your order has been shipped and is on its way!",
+      "delivered": "Your order has been delivered successfully.",
+      "cancelled": "This order has been cancelled.",
+      "pending": "Your order is being processed."
+    }
   }
 } 

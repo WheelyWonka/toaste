@@ -12,6 +12,7 @@
     "test:generate-order-id": "./scripts/test-generate-order-id.sh",
     "test:shipping": "./scripts/test-shipping.sh",
     "test:orders": "./scripts/test-orders.sh",
+    "test:get-order": "./scripts/test-get-order.sh",
     "kill": "./scripts/kill-dev.sh"
   },
   "devDependencies": {

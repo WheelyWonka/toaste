@@ -37,7 +37,8 @@ async function sendEmailNotifications(orderData) {
     subtotal: orderData.totalSubtotal,
     taxes: orderData.totalTaxAmount,
     shippingFee: parseFloat(orderData.shippingFee),
-    total: orderData.totalPrice
+    total: orderData.totalPrice,
+    chitChatLink: orderData.chitChatLink
   };
 
   const baseUrl = process.env.URL || 'https://toastebikepolo.netlify.app';
@@ -190,7 +191,8 @@ async function ordersHandler(event, context) {
       // Send email notifications (non-blocking)
       sendEmailNotifications({
         orderCode, customerName, customerEmail, formattedAddress, notes, language,
-        products: productDetails, totalSubtotal, totalTaxAmount, shippingFee, totalPrice
+        products: productDetails, totalSubtotal, totalTaxAmount, shippingFee, totalPrice,
+        chitChatLink
       }).catch(error => {
         log('WARN', 'Email notifications failed', { error: error.message });
         // Don't fail the order if email fails

@@ -2,6 +2,14 @@
 const { withCors, createCorsResponse } = require('./cors');
 const { log, handleAsyncError } = require('./utils');
 
+// Generate tracking URL based on environment
+function getTrackingUrl(orderCode) {
+  const baseUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://toastebikepolo.ca' 
+    : 'https://preprod.toastebikepolo.ca';
+  return `${baseUrl}?order=${orderCode}`;
+}
+
 // Email templates (simplified)
 const EMAIL_TEMPLATES = {
   customer: {
@@ -16,6 +24,7 @@ const EMAIL_TEMPLATES = {
       paymentText: 'Send payment to: toastebikepolo@proton.me',
       paymentNote: 'Canadians can use Interac, others can use PayPal.',
       paymentWarning: '🚨 Don\'t forget to include your order code in the payment details!',
+      trackingText: 'Track your order status:',
       footer: 'We\'ll process your order as soon as we receive your payment.\n\nThanks for choosing Toasté Bike Polo!\n\nBest regards,\n\nGermain'
     },
     fr: {
@@ -29,6 +38,7 @@ const EMAIL_TEMPLATES = {
       paymentText: 'Envoie ton paiement à : toastebikepolo@proton.me',
       paymentNote: 'Les Canadien.nes peuvent utiliser Interac, les autres peuvent utiliser PayPal.',
       paymentWarning: '🚨 N\'oublie pas d\'inclure ton code de commande dans les détails du paiement !',
+      trackingText: 'Suis le statut de ta commande:',
       footer: 'On va traiter ta commande dès qu\'on reçoit ton paiement.\n\nMerci d\'avoir choisi Toasté Bike Polo !\n\nSalutations,\n\nGermain'
     }
   },
@@ -118,6 +128,11 @@ function generateCustomerEmailHTML(orderData, template, spokeText) {
         <p><strong>${template.paymentWarning}</strong></p>
       </div>
       
+      <div style="background: #f0f8ff; padding: 20px; border: 2px solid #2d2218; margin: 20px 0; text-align: center;">
+        <h3 style="margin-top: 0;">${template.trackingText}</h3>
+        <a href="${getTrackingUrl(orderData.orderCode)}" style="display: inline-block; background: #2d2218; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Order Status</a>
+      </div>
+      
       <p>${template.footer.replace(/\n/g, '<br>')}</p>
     </div>
   `;
@@ -166,6 +181,14 @@ function generateOwnerEmailHTML(orderData, template) {
           <span>CAD$${orderData.total.toFixed(2)}</span>
         </div>
       </div>
+      
+      ${orderData.chitChatLink ? `
+      <div style="background: #e8f4fd; padding: 15px; border: 2px solid #2d2218; margin: 20px 0; text-align: center;">
+        <h3 style="margin-top: 0;">Shipment Details</h3>
+        <p><strong>ChitChat Shipment:</strong></p>
+        <a href="${orderData.chitChatLink}" style="display: inline-block; background: #2d2218; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Shipment</a>
+      </div>
+      ` : ''}
       
       <p>${template.orderDate} ${new Date().toLocaleString()}</p>
     </div>

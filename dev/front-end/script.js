@@ -1423,4 +1423,186 @@ document.addEventListener('DOMContentLoaded', () => {
             updateReviewDisplay();
         }
     });
+});
+
+// Order Status Modal Functions
+function showOrderStatusModal() {
+    const modal = document.getElementById('order-status-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    } else {
+        console.error('Order status modal element not found');
+    }
+}
+
+// Make function globally accessible
+window.closeOrderStatusModal = function() {
+    const modal = document.getElementById('order-status-modal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+    
+    // Remove order parameter from URL
+    const url = new URL(window.location);
+    url.searchParams.delete('order');
+    window.history.replaceState({}, '', url);
+};
+
+async function loadOrderDetails(orderId) {
+    const loadingDiv = document.getElementById('order-loading');
+    const contentDiv = document.getElementById('order-content');
+    const errorDiv = document.getElementById('order-error');
+    
+    // Show loading state
+    loadingDiv.style.display = 'block';
+    contentDiv.style.display = 'none';
+    errorDiv.style.display = 'none';
+    
+    try {
+        const response = await fetch(`${API_CONFIG.baseUrl}/get-order/${orderId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success && result.order) {
+            displayOrderDetails(result.order);
+        } else {
+            showOrderError();
+        }
+    } catch (error) {
+        console.error('Error loading order details:', error);
+        showOrderError();
+    }
+}
+
+function displayOrderDetails(order) {
+    const loadingDiv = document.getElementById('order-loading');
+    const contentDiv = document.getElementById('order-content');
+    const errorDiv = document.getElementById('order-error');
+    
+    // Hide loading and error, show content
+    loadingDiv.style.display = 'none';
+    errorDiv.style.display = 'none';
+    contentDiv.style.display = 'block';
+    
+    // Populate order details
+    document.getElementById('order-code').textContent = order.orderCode;
+    
+    // Status with description
+    const status = order.orderStatus || 'pending';
+    const statusElement = document.getElementById('order-status');
+    const statusDescriptionElement = document.getElementById('order-status-description');
+    
+    // Get translated status and description
+    const statusKey = `orderStatus.status.${status}`;
+    const descriptionKey = `orderStatus.statusDescription.${status}`;
+    
+    statusElement.textContent = i18n.t(statusKey) || status;
+    statusDescriptionElement.textContent = i18n.t(descriptionKey) || '';
+    
+    // Contact info (exactly like step 3)
+    const orderContactInfo = document.getElementById('order-contact-info');
+    orderContactInfo.innerHTML = `
+        <div class="review-contact-item">
+            <span class="review-contact-label">${i18n.t('orderStatus.customerName')}</span> ${order.customerName}
+        </div>
+        <div class="review-contact-item">
+            <span class="review-contact-label">${i18n.t('orderStatus.customerEmail')}</span> ${order.customerEmail}
+        </div>
+        <div class="review-contact-item">
+            <span class="review-contact-label">${i18n.t('orderStatus.shippingAddress')}</span> ${order.shippingAddress}
+        </div>
+        ${order.notes && order.notes.trim() ? `
+        <div class="review-contact-item">
+            <span class="review-contact-label">${i18n.t('orderStatus.notes')}</span> ${order.notes}
+        </div>
+        ` : ''}
+    `;
+    
+    // Order items (exactly like step 3)
+    const itemsDiv = document.getElementById('order-items');
+    itemsDiv.innerHTML = '';
+    
+    if (order.products && Array.isArray(order.products) && order.products.length > 0) {
+        // Add product items
+        order.products.forEach(product => {
+            const orderItem = document.createElement('div');
+            orderItem.className = 'review-order-item';
+            orderItem.innerHTML = `
+                <div>
+                    <strong>${product.quantity}x</strong> ${product.spokeCount} ${getSpokeText()}, ${formatWheelSize(product.wheelSize)}
+                </div>
+                <div>CAD$${(product.price || 0).toFixed(2)}</div>
+            `;
+            itemsDiv.appendChild(orderItem);
+        });
+    } else {
+        // Fallback: show order summary from Airtable if products are empty
+        const productSummary = order.productSummary || 'Order details not available';
+        const orderItem = document.createElement('div');
+        orderItem.className = 'review-order-item';
+        // Convert \n to <br> tags for proper line breaks
+        const formattedSummary = productSummary.replace(/\n/g, '<br>');
+        orderItem.innerHTML = `<div class="product-summary">${formattedSummary}</div><div></div>`;
+        itemsDiv.appendChild(orderItem);
+    }
+    
+    // Add subtotal (exactly like step 3)
+    const subtotalItem = document.createElement('div');
+    subtotalItem.className = 'review-order-item';
+    subtotalItem.innerHTML = `
+        <div><strong>${i18n.t('orderStatus.subtotal')}</strong></div>
+        <div>CAD$${(order.subtotal || 0).toFixed(2)}</div>
+    `;
+    itemsDiv.appendChild(subtotalItem);
+    
+    // Add taxes (exactly like step 3)
+    const taxesItem = document.createElement('div');
+    taxesItem.className = 'review-order-item';
+    taxesItem.innerHTML = `
+        <div><strong>${i18n.t('orderStatus.taxes')}</strong></div>
+        <div>CAD$${(order.taxes || 0).toFixed(2)}</div>
+    `;
+    itemsDiv.appendChild(taxesItem);
+    
+    // Add shipping (exactly like step 3)
+    const shippingItem = document.createElement('div');
+    shippingItem.className = 'review-order-item';
+    shippingItem.innerHTML = `
+        <div><strong>${i18n.t('orderStatus.shipping')}</strong></div>
+        <div>CAD$${(order.shippingFee || 0).toFixed(2)}</div>
+    `;
+    itemsDiv.appendChild(shippingItem);
+    
+    // Display total (exactly like step 3)
+    document.getElementById('order-total').textContent = (order.totalPrice || 0).toFixed(2);
+    
+}
+
+function showOrderError() {
+    const loadingDiv = document.getElementById('order-loading');
+    const contentDiv = document.getElementById('order-content');
+    const errorDiv = document.getElementById('order-error');
+    
+    loadingDiv.style.display = 'none';
+    contentDiv.style.display = 'none';
+    errorDiv.style.display = 'block';
+}
+
+// Check for order parameter on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('order');
+    
+    if (orderId) {
+        // Add a small delay to ensure all other DOMContentLoaded handlers have run
+        setTimeout(() => {
+            showOrderStatusModal();
+            loadOrderDetails(orderId);
+        }, 100);
+    }
 }); 

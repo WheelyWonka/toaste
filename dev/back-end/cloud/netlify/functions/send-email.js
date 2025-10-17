@@ -29,7 +29,7 @@ const EMAIL_TEMPLATES = {
       paymentText: 'Envoie ton paiement à : toastebikepolo@proton.me',
       paymentNote: 'Les Canadien.nes peuvent utiliser Interac, les autres peuvent utiliser PayPal.',
       paymentWarning: '🚨 N\'oublie pas d\'inclure ton code de commande dans les détails du paiement !',
-      footer: 'On va traiter ta commande dès qu\'on reçoit ton paiement.\nMerci d\'avoir choisi Toasté Bike Polo !\nSalutations,\nGermain'
+      footer: 'On va traiter ta commande dès qu\'on reçoit ton paiement.\n\nMerci d\'avoir choisi Toasté Bike Polo !\n\nSalutations,\n\nGermain'
     }
   },
   owner: {

@@ -6,9 +6,21 @@ A serverless order management system using Netlify Functions and Airtable for To
 
 ```
 Frontend (GitHub Pages) → Netlify Functions → Airtable API → Database
+                                    ↓
+                              ChitChats API (Shipping)
+                                    ↓
+                              SendGrid API (Email)
 ```
 
 **Note**: This is an API-only deployment. The frontend is hosted separately on GitHub Pages.
+
+## 📡 Available Functions
+
+- **`health.js`** - Health check endpoint
+- **`shipping.js`** - Calculate shipping costs using ChitChats API
+- **`orders.js`** - Create orders and store in Airtable
+- **`send-email.js`** - Send confirmation emails via SendGrid
+- **`cors.js`** - Shared CORS utility for all functions
 
 ## 🚀 Quick Setup Guide
 
@@ -230,4 +242,70 @@ netlify functions:invoke orders --payload '{"test": true}'
 
 # Check environment variables
 netlify env:list
+```
+
+## 🛠️ Local Development
+
+### Development Scripts
+
+This project includes scripts to help you develop and test locally without consuming Netlify credits.
+
+#### Quick Start
+
+1. **Setup Development Environment**
+   ```bash
+   ./scripts/setup-dev.sh
+   ```
+
+2. **Start Local Development Server**
+   ```bash
+   ./scripts/start-dev.sh
+   ```
+
+3. **Test Your Functions**
+   ```bash
+   ./scripts/test-functions.sh
+   ```
+
+#### Available Scripts
+
+- **`scripts/setup-dev.sh`** - Initial setup of development environment
+- **`scripts/start-dev.sh`** - Starts the local Netlify development server
+- **`scripts/test-functions.sh`** - Tests all functions (shipping, orders)
+- **`scripts/test-shipping.sh`** - Tests only the shipping function
+- **`scripts/test-orders.sh`** - Tests only the orders function
+
+#### Local Development Endpoints
+
+When the development server is running on `http://localhost:8889`, these endpoints are available:
+
+- **Health Check**: `http://localhost:8889/.netlify/functions/health`
+- **Shipping**: `http://localhost:8889/.netlify/functions/shipping`
+- **Orders**: `http://localhost:8889/.netlify/functions/orders`
+- **Send Email**: `http://localhost:8889/.netlify/functions/send-email`
+
+#### Environment Variables for Local Development
+
+For local development, Netlify CLI will use your existing `.env` file. Make sure it contains your API keys:
+
+```bash
+CHITCHATS_ACCESS_TOKEN=your_actual_token
+CHITCHATS_CLIENT_ID=your_actual_client_id
+AIRTABLE_PAT=your_actual_airtable_token
+AIRTABLE_BASE_ID=your_actual_base_id
+RESEND_API_KEY=your_actual_resend_key
+```
+
+**Note**: Production environment variables are stored in your Netlify account dashboard.
+
+#### NPM Scripts
+
+You can also use npm scripts for convenience:
+
+```bash
+npm run setup    # Setup development environment
+npm run start    # Start development server
+npm run test     # Test all functions
+npm run test:shipping  # Test shipping function only
+npm run test:orders    # Test orders function only
 ```

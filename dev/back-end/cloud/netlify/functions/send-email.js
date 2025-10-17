@@ -1,6 +1,19 @@
 // Using Resend API for reliable serverless email sending
 const { withCors, createCorsResponse } = require('./cors');
 
+// Logging helper
+function log(level, message, data = null) {
+  const timestamp = new Date().toISOString();
+  const separator = '='.repeat(60);
+  
+  console.log(`\n${separator}`);
+  console.log(`[${timestamp}] [${level.toUpperCase()}] ${message}`);
+  if (data) {
+    console.log('Data:', JSON.stringify(data, null, 2));
+  }
+  console.log(separator);
+}
+
 // Get email content based on language
 function getEmailContent(orderData, emailType, language = 'en') {
     const isFrench = language === 'fr';
@@ -185,15 +198,17 @@ function getEmailContent(orderData, emailType, language = 'en') {
 
 // Function to send email via Resend API
 async function sendEmailViaProtonAPI(emailContent) {
-    console.log('Sending email via Resend API...');
+    log('INFO', 'Sending email via Resend API', {
+        to: emailContent.to,
+        subject: emailContent.subject
+    });
     
     const resendApiKey = process.env.RESEND_API_KEY;
     
     if (!resendApiKey) {
+        log('ERROR', 'RESEND_API_KEY environment variable is not set');
         throw new Error('RESEND_API_KEY environment variable is not set');
     }
-    
-    console.log('Using Resend API for email sending...');
     const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -210,69 +225,72 @@ async function sendEmailViaProtonAPI(emailContent) {
     
     if (!response.ok) {
         const errorText = await response.text();
+        log('ERROR', 'Resend API error', {
+            status: response.status,
+            statusText: response.statusText,
+            errorText
+        });
         throw new Error(`Resend API failed: ${response.status} ${response.statusText} - ${errorText}`);
     }
     
     const result = await response.json();
-    console.log('Resend API response:', result);
+    log('INFO', 'Resend API response received', { result });
     return { messageId: result.id };
 }
 
 // Main email handler
 async function emailHandler(event, context) {
-    console.log('=== EMAIL FUNCTION CALLED ===');
-    console.log('HTTP Method:', event.httpMethod);
-    console.log('Headers:', JSON.stringify(event.headers, null, 2));
-    console.log('Body:', event.body);
+    log('INFO', 'Email function called', {
+        method: event.httpMethod,
+        headers: event.headers,
+        body: event.body ? 'Present' : 'Missing'
+    });
 
     if (event.httpMethod !== 'POST') {
-        console.log('Invalid HTTP method:', event.httpMethod);
+        log('WARN', 'Invalid HTTP method', { method: event.httpMethod });
         return createCorsResponse(405, event, { error: 'Method not allowed' });
     }
 
     try {
-        console.log('Parsing request body...');
         const { orderData, emailType } = JSON.parse(event.body);
         
-        console.log('=== EMAIL REQUEST DATA ===');
-        console.log('Email Type:', emailType);
-        console.log('Order Data:', JSON.stringify(orderData, null, 2));
+        log('INFO', 'Email request data parsed', {
+            emailType,
+            hasOrderData: !!orderData,
+            orderCode: orderData?.orderCode,
+            customerEmail: orderData?.customerEmail
+        });
         
         // Log email attempt for debugging
-        console.log('Attempting to send email:', {
+        log('INFO', 'Attempting to send email', {
             emailType,
             to: emailType === 'customer' ? orderData.customerEmail : process.env.PROTON_EMAIL,
             orderCode: orderData.orderCode
         });
 
         // Check environment variables
-        console.log('=== ENVIRONMENT VARIABLES CHECK ===');
-        console.log('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
-        console.log('RESEND_API_KEY length:', process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.length : 0);
+        log('INFO', 'Environment variables check', {
+            hasResendApiKey: !!process.env.RESEND_API_KEY,
+            resendApiKeyLength: process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.length : 0
+        });
 
-        // Using Resend API
-        console.log('Using Resend API for sending emails...');
-
-        console.log('=== PREPARING EMAIL CONTENT ===');
-        console.log('Email type:', emailType);
-        console.log('Language:', orderData.language || 'en');
+        log('INFO', 'Preparing email content', {
+            emailType,
+            language: orderData.language || 'en'
+        });
         
         const emailContent = getEmailContent(orderData, emailType, orderData.language);
-        console.log('Email subject:', emailContent.subject);
-        console.log('Email to:', emailContent.to);
-
-        console.log('=== SENDING EMAIL VIA RESEND API ===');
-        console.log('Email content prepared:', {
-            from: emailContent.from,
-            to: emailContent.to,
+        log('INFO', 'Email content prepared', {
             subject: emailContent.subject,
+            to: emailContent.to,
+            from: emailContent.from,
             htmlLength: emailContent.html ? emailContent.html.length : 0
         });
 
         // Send email using Resend API
         const result = await sendEmailViaProtonAPI(emailContent);
         
-        console.log('✅ Email sent successfully via Resend API:', {
+        log('INFO', 'Email sent successfully via Resend API', {
             messageId: result.messageId,
             emailType,
             to: emailContent.to

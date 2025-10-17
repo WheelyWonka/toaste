@@ -132,3 +132,5 @@ temp/
 .nfs*
 
 .cursor/
+# Local Netlify folder
+.netlify

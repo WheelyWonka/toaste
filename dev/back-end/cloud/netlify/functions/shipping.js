@@ -2,6 +2,19 @@
 const https = require('https');
 const { withCors, createCorsResponse } = require('./cors');
 
+// Logging helper
+function log(level, message, data = null) {
+  const timestamp = new Date().toISOString();
+  const separator = '='.repeat(60);
+  
+  console.log(`\n${separator}`);
+  console.log(`[${timestamp}] [${level.toUpperCase()}] ${message}`);
+  if (data) {
+    console.log('Data:', JSON.stringify(data, null, 2));
+  }
+  console.log(separator);
+}
+
 
 // Parse address string into components
 function parseAddress(addressString) {
@@ -68,6 +81,14 @@ function requestShippingRate(addressData, numberOfCovers = 1, totalPrice = 40) {
     const weight = 100 * covers; // 100g per cover
     const size_z = 3 + (0.5 * covers); // 3cm base + 0.5cm per cover
     
+    log('INFO', 'Preparing ChitChats API request', {
+      covers,
+      price,
+      weight,
+      size_z,
+      addressData
+    });
+    
     const postData = JSON.stringify({
       package_contents: "gift",
       name: addressData.name,
@@ -103,8 +124,19 @@ function requestShippingRate(addressData, numberOfCovers = 1, totalPrice = 40) {
       }
     };
 
+    log('INFO', 'Making HTTPS request to ChitChats API', {
+      url: options.hostname + options.path,
+      method: options.method,
+      hasAuth: !!process.env.CHITCHATS_ACCESS_TOKEN
+    });
+
     const req = https.request(options, (res) => {
       let data = '';
+
+      log('INFO', 'ChitChats API response received', {
+        statusCode: res.statusCode,
+        headers: res.headers
+      });
 
       res.on('data', (chunk) => {
         data += chunk;
@@ -112,19 +144,33 @@ function requestShippingRate(addressData, numberOfCovers = 1, totalPrice = 40) {
 
       res.on('end', () => {
         try {
+          log('INFO', 'ChitChats API response body', { data });
           const response = JSON.parse(data);
           if (res.statusCode === 201) {
+            log('INFO', 'ChitChats API request successful', { response });
             resolve(response);
           } else {
+            log('ERROR', 'ChitChats API returned error status', {
+              statusCode: res.statusCode,
+              data
+            });
             reject(new Error(`ChitChats API error: ${res.statusCode} - ${data}`));
           }
         } catch (error) {
+          log('ERROR', 'Failed to parse ChitChats response', {
+            error: error.message,
+            data
+          });
           reject(new Error(`Failed to parse ChitChats response: ${error.message}`));
         }
       });
     });
 
     req.on('error', (error) => {
+      log('ERROR', 'ChitChats API request failed', {
+        error: error.message,
+        code: error.code
+      });
       reject(new Error(`ChitChats API request failed: ${error.message}`));
     });
 
@@ -135,13 +181,27 @@ function requestShippingRate(addressData, numberOfCovers = 1, totalPrice = 40) {
 
 // Main shipping calculation handler
 async function shippingHandler(event) {
+  log('INFO', 'Shipping calculation request received', {
+    method: event.httpMethod,
+    headers: event.headers,
+    body: event.body ? 'Present' : 'Missing'
+  });
+
   if (event.httpMethod !== 'POST') {
+    log('WARN', 'Invalid HTTP method', { method: event.httpMethod });
     return createCorsResponse(405, event, { error: 'Method not allowed' });
   }
 
   try {
     const body = JSON.parse(event.body);
     const { address, numberOfCovers, totalPrice } = body;
+    
+    log('INFO', 'Request body parsed', {
+      hasAddress: !!address,
+      numberOfCovers,
+      totalPrice,
+      addressKeys: address ? Object.keys(address) : []
+    });
 
     if (!address) {
       return createCorsResponse(400, event, { error: 'Address is required' });
@@ -159,17 +219,36 @@ async function shippingHandler(event) {
 
     // Validate required fields
     if (!addressData.name || !addressData.address_1 || !addressData.city || !addressData.country_code) {
+      log('WARN', 'Incomplete address data', { addressData });
       return createCorsResponse(400, event, { 
         error: 'Incomplete address. Please provide name, address, city, and country.' 
       });
     }
 
+    log('INFO', 'Requesting shipping rate from ChitChats', {
+      addressData,
+      numberOfCovers,
+      totalPrice: totalPrice?.total
+    });
+
     // Request shipping rate from ChitChats
-    const shippingResponse = await requestShippingRate(addressData, numberOfCovers, totalPrice.total);
+    const shippingResponse = await requestShippingRate(addressData, numberOfCovers, totalPrice?.total);
+
+    log('INFO', 'ChitChats API response received', {
+      hasShipment: !!shippingResponse.shipment,
+      hasPostageFee: !!(shippingResponse.shipment?.postage_fee || shippingResponse.postage_fee),
+      hasId: !!(shippingResponse.shipment?.id || shippingResponse.id)
+    });
 
     // Extract shipping cost and shipment ID from response
     const shippingCost = shippingResponse.shipment?.postage_fee || shippingResponse.postage_fee || 0;
     const shipmentId = shippingResponse.shipment?.id || shippingResponse.id;
+
+    log('INFO', 'Shipping calculation successful', {
+      shippingCost,
+      shipmentId,
+      currency: 'CAD'
+    });
 
     return createCorsResponse(200, event, {
       success: true,
@@ -181,7 +260,10 @@ async function shippingHandler(event) {
     });
 
   } catch (error) {
-    console.error('Shipping calculation error:', error);
+    log('ERROR', 'Shipping calculation failed', {
+      error: error.message,
+      stack: error.stack
+    });
     
     return createCorsResponse(500, event, {
       error: 'Failed to calculate shipping cost',

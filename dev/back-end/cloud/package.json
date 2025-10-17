@@ -1,29 +1,23 @@
 {
-  "name": "toaste-bike-polo-cloud",
+  "name": "toaste-backend-local",
   "version": "1.0.0",
-  "description": "Toasté Bike Polo order system - Netlify Functions + Airtable",
-  "main": "index.js",
+  "description": "Local development environment for Toasté backend",
   "scripts": {
     "dev": "netlify dev",
-    "build": "echo 'No build step needed'",
-    "deploy": "netlify deploy --prod"
-  },
-  "keywords": [
-    "bike-polo",
-    "netlify",
-    "airtable",
-    "serverless"
-  ],
-  "author": "Toasté Bike Polo",
-  "license": "MIT",
-  "dependencies": {
-    "airtable": "^0.12.2",
-    "nodemailer": "^6.9.7"
+    "dev:live": "netlify dev --live",
+    "functions:serve": "netlify functions:serve",
+    "setup": "./scripts/setup-dev.sh",
+    "start": "./scripts/start-dev.sh",
+    "test": "./scripts/test-functions.sh",
+    "test:shipping": "./scripts/test-shipping.sh",
+    "test:orders": "./scripts/test-orders.sh",
+    "kill": "./scripts/kill-dev.sh"
   },
   "devDependencies": {
     "netlify-cli": "^17.0.0"
   },
-  "engines": {
-    "node": ">=18.0.0"
+  "dependencies": {
+    "airtable": "^0.12.2",
+    "https": "^1.0.0"
   }
 }

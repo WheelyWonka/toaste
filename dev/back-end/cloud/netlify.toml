@@ -1,32 +1,26 @@
 [build]
-  # Build command (not needed for functions-only site)
-  command = ""
-
-  # Publish directory (empty since we only have functions)
-  publish = "."
-
-  # Functions directory
   functions = "netlify/functions"
 
-[build.environment]
-  # Node.js version
-  NODE_VERSION = "18"
+[dev]
+  port = 8889
+  publish = "."
 
-# No redirects needed for API-only site
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
 
-# Headers for security
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
+[[redirects]]
+  from = "/shipping"
+  to = "/.netlify/functions/shipping"
+  status = 200
 
-# Headers for API functions (CORS handled by function code)
-[[headers]]
-  for = "/.netlify/functions/*"
-  [headers.values]
-    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
-    Access-Control-Allow-Headers = "Content-Type, Authorization"
-    Access-Control-Max-Age = "86400"
+[[redirects]]
+  from = "/orders"
+  to = "/.netlify/functions/orders"
+  status = 200
+
+[[redirects]]
+  from = "/send-email"
+  to = "/.netlify/functions/send-email"
+  status = 200

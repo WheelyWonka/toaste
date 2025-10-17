@@ -1,6 +1,19 @@
 const Airtable = require('airtable');
 const { withCors, createCorsResponse } = require('./cors');
 
+// Logging helper
+function log(level, message, data = null) {
+  const timestamp = new Date().toISOString();
+  const separator = '='.repeat(60);
+  
+  console.log(`\n${separator}`);
+  console.log(`[${timestamp}] [${level.toUpperCase()}] ${message}`);
+  if (data) {
+    console.log('Data:', JSON.stringify(data, null, 2));
+  }
+  console.log(separator);
+}
+
 // Initialize Airtable (moved inside handler to avoid issues with OPTIONS requests)
 function getAirtableBase() {
   return new Airtable({
@@ -41,6 +54,12 @@ function calculatePricing(quantity) {
 
 // Main orders handler
 async function ordersHandler(event, context) {
+  log('INFO', 'Order request received', {
+    method: event.httpMethod,
+    headers: event.headers,
+    body: event.body ? 'Present' : 'Missing'
+  });
+
   try {
     if (event.httpMethod === 'POST') {
       // Create new order
@@ -56,8 +75,27 @@ async function ordersHandler(event, context) {
         shipmentId = null // Default to null if not provided
       } = body;
 
+      log('INFO', 'Order request body parsed', {
+        hasProducts: !!products,
+        productCount: products?.length,
+        hasCustomerName: !!customerName,
+        hasCustomerEmail: !!customerEmail,
+        hasShippingAddress: !!shippingAddress,
+        shippingFee,
+        shipmentId,
+        language
+      });
+
       // Validate required fields
       if (!products || !Array.isArray(products) || products.length === 0 || !customerName || !customerEmail || !shippingAddress) {
+        log('WARN', 'Missing required fields', {
+          hasProducts: !!products,
+          isProductsArray: Array.isArray(products),
+          productsLength: products?.length,
+          hasCustomerName: !!customerName,
+          hasCustomerEmail: !!customerEmail,
+          hasShippingAddress: !!shippingAddress
+        });
         return createCorsResponse(400, event, {
           error: 'Missing required fields',
           required: ['products', 'customerName', 'customerEmail', 'shippingAddress']
@@ -66,6 +104,7 @@ async function ordersHandler(event, context) {
 
       // Validate address structure
       if (!shippingAddress.name || !shippingAddress.address_1 || !shippingAddress.city || !shippingAddress.country_code) {
+        log('WARN', 'Incomplete address structure', { shippingAddress });
         return createCorsResponse(400, event, {
           error: 'Incomplete address. Please provide name, address, city, and country.'
         });
@@ -169,10 +208,16 @@ async function ordersHandler(event, context) {
       };
 
       // Create order in Airtable
+      log('INFO', 'Creating order in Airtable', { orderRecord });
       const orderResult = await new Promise((resolve, reject) => {
         getAirtableBase()('Orders').create(orderRecord, (err, record) => {
-          if (err) reject(err);
-          else resolve(record);
+          if (err) {
+            log('ERROR', 'Failed to create order in Airtable', { error: err.message });
+            reject(err);
+          } else {
+            log('INFO', 'Order created successfully in Airtable', { orderId: record.id });
+            resolve(record);
+          }
         });
       });
 
@@ -187,10 +232,16 @@ async function ordersHandler(event, context) {
           'Unit Price CAD': product.unitPrice
         };
 
+        log('INFO', 'Creating order item in Airtable', { orderItemRecord });
         const orderItemResult = await new Promise((resolve, reject) => {
           getAirtableBase()('Order Items').create(orderItemRecord, (err, record) => {
-            if (err) reject(err);
-            else resolve(record);
+            if (err) {
+              log('ERROR', 'Failed to create order item in Airtable', { error: err.message, orderItemRecord });
+              reject(err);
+            } else {
+              log('INFO', 'Order item created successfully in Airtable', { itemId: record.id });
+              resolve(record);
+            }
           });
         });
 

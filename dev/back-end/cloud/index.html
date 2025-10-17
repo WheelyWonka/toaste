@@ -77,16 +77,27 @@
         <div class="endpoint">GET /.netlify/functions/health</div>
         <p>Health check endpoint</p>
         
+        <div class="endpoint">POST /.netlify/functions/shipping</div>
+        <p>Calculate shipping costs using ChitChats API</p>
+        
         <div class="endpoint">POST /.netlify/functions/orders</div>
-        <p>Create new wheel cover orders</p>
+        <p>Create new wheel cover orders and store in Airtable</p>
+        
+        <div class="endpoint">POST /.netlify/functions/send-email</div>
+        <p>Send order confirmation emails to customers and owners</p>
+        
+        <h4>Utility Functions:</h4>
+        <div class="endpoint">cors.js</div>
+        <p>Shared CORS utility for all functions</p>
     </div>
 
     <div class="section">
         <h2>🌐 Domains</h2>
         <p>This API is accessible via:</p>
         <ul>
-            <li><strong>api.toastebikepolo.com</strong></li>
-            <li><strong>api.toastebikepolo.ca</strong></li>
+            <li><strong>rest.toastebikepolo.ca</strong> (Production)</li>
+            <li><strong>preprod.toastebikepolo.ca</strong> (Staging)</li>
+            <li><strong>localhost:8889</strong> (Local Development)</li>
         </ul>
         
         <div class="note">
